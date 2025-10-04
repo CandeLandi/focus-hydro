@@ -1,30 +1,90 @@
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-  <!-- Columna izquierda: Botella de agua + Timer -->
-  <div class="space-y-6">
-    <div class="bg-slate-900 rounded-lg p-6">
-      <h2 class="text-2xl font-bold text-white mb-4">Temporizador</h2>
-      <p class="text-slate-400">Vista del temporizador con botella de agua animada</p>
+<div class="grid lg:grid-cols-2 gap-6 py-4">
+  <!-- Columna izquierda: Botella y controles -->
+  <div class="flex flex-col gap-4">
+    <div class="bg-slate-900 rounded-lg p-6 bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-500/5 backdrop-blur border-2 border-cyan-500/20 shadow-2xl shadow-cyan-500/10 flex-1 flex flex-col justify-center">
+      <div class="flex flex-col items-center gap-4">
+        <div class="scale-110">
+          <app-water-bottle [progress]="timerProgress()" [isBreak]="isBreak()" />
+        </div>
+
+        <!-- Timer -->
+        <div class="text-center space-y-2 w-full">
+          <div class="text-xs font-semibold text-cyan-400/80 uppercase tracking-widest">
+            {{ isBreak() ? "Momento de Hidratación" : "Modo Concentración" }}
+          </div>
+
+          <div class="text-6xl font-bold font-mono tabular-nums bg-gradient-to-br from-cyan-500 via-cyan-400 to-cyan-300 bg-clip-text text-transparent drop-shadow-lg">
+            {{ formatTime(timeRemaining()) }}
+          </div>
+
+          <div class="flex items-center justify-center gap-2 text-sm text-slate-400">
+            <span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+            Sesión {{ sessionsCompleted() + 1 }}
+          </div>
+        </div>
+
+        <!-- Controles -->
+        <div class="flex items-center gap-3 w-full">
+          <button
+            (click)="resetTimer()"
+            class="flex-1 p-3 rounded-lg bg-slate-800/50 backdrop-blur border border-slate-700 hover:bg-slate-700 transition-colors">
+            <svg class="w-4 h-4 text-slate-300 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </button>
+          <button
+            (click)="isRunning() ? pauseTimer() : startTimer()"
+            class="flex-[2] h-14 text-base font-semibold bg-gradient-to-r from-cyan-500 via-cyan-400 to-cyan-300 hover:opacity-90 transition-all shadow-lg shadow-cyan-500/30 rounded-lg flex items-center justify-center gap-2">
+            @if (isRunning()) {
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+              </svg>
+              Pausar
+            } @else {
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              {{ sessionsCompleted() === 0 ? 'Comenzar' : 'Continuar' }}
+            }
+          </button>
+          <button
+            class="flex-1 p-3 rounded-lg bg-slate-800/50 backdrop-blur border border-slate-700 hover:bg-slate-700 transition-colors"
+            [disabled]="sessionsCompleted() === 0">
+            <svg class="w-4 h-4 text-slate-300 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Columna derecha: Estadísticas rápidas + Lista de tareas -->
-  <div class="space-y-6">
-    <div class="bg-slate-900 rounded-lg p-6">
-      <h2 class="text-2xl font-bold text-white mb-4">Estadísticas Rápidas</h2>
-      <p class="text-slate-400">Cards con métricas del día</p>
+  <!-- Columna derecha: Stats rápidas + Tareas -->
+  <div class="flex flex-col gap-4">
+    <div class="grid grid-cols-3 gap-4">
+      <div class="bg-slate-900 rounded-lg p-4 bg-gradient-to-br from-cyan-500/10 to-cyan-500/5 border border-cyan-500/20">
+        <div class="text-center">
+          <div class="text-4xl font-bold text-cyan-500">{{ sessionsCompleted() }}</div>
+          <div class="text-xs text-slate-400 mt-1">Completadas Hoy</div>
+        </div>
+      </div>
+      <div class="bg-slate-900 rounded-lg p-4 bg-gradient-to-br from-cyan-400/10 to-cyan-400/5 border border-cyan-400/20">
+        <div class="text-center">
+          <div class="text-4xl font-bold text-cyan-400">{{ focusHours() }}h</div>
+          <div class="text-xs text-slate-400 mt-1">Enfoque Total</div>
+        </div>
+      </div>
+      <div class="bg-slate-900 rounded-lg p-4 bg-gradient-to-br from-orange-500/10 to-orange-500/5 border border-orange-500/20">
+        <div class="text-center">
+          <div class="text-4xl font-bold text-orange-500">{{ Math.round(timerProgress()) }}%</div>
+          <div class="text-xs text-slate-400 mt-1">Progreso</div>
+        </div>
+      </div>
     </div>
 
-    <div class="bg-slate-900 rounded-lg p-6">
-      <h2 class="text-2xl font-bold text-white mb-4">Tareas de Enfoque</h2>
-      <p class="text-slate-400">Lista de tareas del día</p>
+    <!-- Tareas -->
+    <div class="max-h-[600px] overflow-auto">
+      <app-task-list />
     </div>
-  </div>
-</div>
-
-<!-- Fila inferior: Reproductor de música -->
-<div class="mt-6">
-  <div class="bg-slate-900 rounded-lg p-6">
-    <h2 class="text-2xl font-bold text-white mb-4">Sonidos para Concentración</h2>
-    <p class="text-slate-400">Reproductor de música ambiental</p>
   </div>
 </div>

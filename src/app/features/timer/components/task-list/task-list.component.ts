@@ -1,12 +1,12 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 export interface Task {
   id: string;
-  title: string;
+  text: string;
   completed: boolean;
-  date: Date;
+  createdAt: number;
 }
 
 @Component({
@@ -17,29 +17,54 @@ export interface Task {
   styles: []
 })
 export class TaskListComponent {
-  @Input() tasks: Task[] = [];
-  @Output() taskAdded = new EventEmitter<string>();
-  @Output() taskToggled = new EventEmitter<string>();
-  @Output() taskDeleted = new EventEmitter<string>();
+  tasks = signal<Task[]>([]);
+  newTask = signal<string>('');
 
-  newTaskTitle = '';
+  // Computed properties
+  completedCount = computed(() => this.tasks().filter(t => t.completed).length);
 
-  get completedTasks(): number {
-    return this.tasks.filter(task => task.completed).length;
-  }
+  today = computed(() => {
+    return new Date().toLocaleDateString("es-ES", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    });
+  });
+
+  completionPercentage = computed(() => {
+    const total = this.tasks().length;
+    return total > 0 ? Math.round((this.completedCount() / total) * 100) : 0;
+  });
 
   addTask(): void {
-    if (this.newTaskTitle.trim()) {
-      this.taskAdded.emit(this.newTaskTitle.trim());
-      this.newTaskTitle = '';
+    if (this.newTask().trim()) {
+      const newTask: Task = {
+        id: Date.now().toString(),
+        text: this.newTask().trim(),
+        completed: false,
+        createdAt: Date.now(),
+      };
+      this.tasks.update(tasks => [...tasks, newTask]);
+      this.newTask.set('');
     }
   }
 
-  toggleTask(taskId: string): void {
-    this.taskToggled.emit(taskId);
+  toggleTask(id: string): void {
+    this.tasks.update(tasks =>
+      tasks.map(task =>
+        task.id === id ? { ...task, completed: !task.completed } : task
+      )
+    );
   }
 
-  deleteTask(taskId: string): void {
-    this.taskDeleted.emit(taskId);
+  deleteTask(id: string): void {
+    this.tasks.update(tasks => tasks.filter(task => task.id !== id));
+  }
+
+  onKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      this.addTask();
+    }
   }
 }
+

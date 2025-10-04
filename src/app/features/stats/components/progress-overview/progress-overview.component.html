@@ -1,0 +1,100 @@
+<div class="space-y-6">
+  <!-- Título -->
+  <div class="text-center">
+    <h2 class="text-2xl font-bold text-cyan-400 mb-2">Tu Progreso de Productividad</h2>
+    <p class="text-slate-400">
+      Cada sesión completada es un paso hacia tus objetivos. Mantén la consistencia y observa tu crecimiento.
+    </p>
+  </div>
+
+  <!-- Cards de resumen -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Sesiones Totales -->
+    <div class="bg-slate-800 rounded-lg p-4 text-center">
+      <div class="text-2xl font-bold text-cyan-400 mb-1">{{ progressData.totalSessions }}</div>
+      <div class="text-sm text-slate-300">Sesiones Totales</div>
+    </div>
+
+    <!-- Tiempo de Enfoque -->
+    <div class="bg-slate-800 rounded-lg p-4 text-center">
+      <div class="text-2xl font-bold text-cyan-400 mb-1">{{ progressData.totalFocusTime }}</div>
+      <div class="text-sm text-slate-300">Tiempo de Enfoque</div>
+    </div>
+
+    <!-- Racha Actual -->
+    <div class="bg-slate-800 rounded-lg p-4 text-center">
+      <div class="text-2xl font-bold text-cyan-400 mb-1">{{ progressData.currentStreak }}</div>
+      <div class="text-sm text-slate-300">Racha Actual</div>
+    </div>
+
+    <!-- Tareas Completadas -->
+    <div class="bg-slate-800 rounded-lg p-4 text-center">
+      <div class="text-2xl font-bold text-green-400 mb-1">{{ progressData.completedTasks }}</div>
+      <div class="text-sm text-slate-300">Tareas Completadas</div>
+    </div>
+  </div>
+
+  <!-- Análisis detallado -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Métricas específicas -->
+    <div class="space-y-4">
+      <h3 class="text-lg font-semibold text-white">Métricas Detalladas</h3>
+
+      <div class="bg-slate-800 rounded-lg p-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-slate-300">Días Perfectos</span>
+          <span class="text-green-400 font-semibold">{{ progressData.perfectDays }}</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-800 rounded-lg p-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-slate-300">Mejor Racha</span>
+          <span class="text-cyan-400 font-semibold">{{ progressData.bestStreak }} días</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-800 rounded-lg p-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-slate-300">Promedio Semanal</span>
+          <span class="text-cyan-400 font-semibold">{{ progressData.weeklyAverage }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Índice de productividad -->
+    <div class="space-y-4">
+      <h3 class="text-lg font-semibold text-white">Índice de Productividad</h3>
+
+      <div class="bg-slate-800 rounded-lg p-6 text-center">
+        <div class="text-4xl font-bold text-cyan-400 mb-2">
+          {{ progressData.productivityIndex }} / 100
+        </div>
+        <p class="text-sm text-slate-400 mb-4">
+          Calculado en base a tu consistencia, sesiones completadas y días perfectos
+        </p>
+
+        <!-- Barra de progreso -->
+        <div class="w-full bg-slate-700 rounded-full h-2">
+          <div
+            class="bg-gradient-to-r from-cyan-500 to-cyan-400 h-2 rounded-full transition-all duration-1000"
+            [style.width.%]="progressData.productivityIndex">
+          </div>
+        </div>
+      </div>
+
+      <!-- Consejo del día -->
+      <div class="bg-slate-800 rounded-lg p-4">
+        <div class="flex items-start space-x-3">
+          <div class="text-cyan-400 text-xl">💡</div>
+          <div>
+            <h4 class="text-sm font-semibold text-cyan-400 mb-1">Consejo del día:</h4>
+            <p class="text-sm text-slate-300">
+              Excelente inicio. La consistencia diaria construye hábitos duraderos.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,65 @@
+<div class="flex flex-col items-center space-y-4">
+  <!-- Botella de agua SVG -->
+  <div class="relative">
+    <svg width="200" height="300" viewBox="0 0 200 300" class="drop-shadow-lg">
+      <!-- Botella -->
+      <path d="M80 20 L80 10 L70 10 L70 20 L60 20 L60 280 L140 280 L140 20 Z"
+            fill="#1e293b" stroke="#334155" stroke-width="2"/>
+
+      <!-- Agua -->
+      <rect x="65" y="50" width="70" height="200"
+            [attr.y]="50 + (200 * (1 - waterLevel / 100))"
+            [attr.height]="200 * (waterLevel / 100)"
+            fill="url(#waterGradient)"
+            class="transition-all duration-1000 ease-in-out"/>
+
+      <!-- Burbujas -->
+      <circle cx="90" cy="100" r="3" fill="#ffffff" opacity="0.6"
+              [attr.cy]="100 + (200 * (1 - waterLevel / 100))"/>
+      <circle cx="120" cy="150" r="2" fill="#ffffff" opacity="0.4"
+              [attr.cy]="150 + (200 * (1 - waterLevel / 100))"/>
+      <circle cx="100" cy="200" r="2.5" fill="#ffffff" opacity="0.5"
+              [attr.cy]="200 + (200 * (1 - waterLevel / 100))"/>
+
+      <!-- Gradiente para el agua -->
+      <defs>
+        <linearGradient id="waterGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#0891b2;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+
+  <!-- Timer -->
+  <div class="text-center">
+    <div class="text-4xl font-mono font-bold text-cyan-400 mb-2">
+      {{ formatTime(timeRemaining) }}
+    </div>
+    <div class="text-sm text-slate-400 mb-1">{{ waterLevel.toFixed(0) }}%</div>
+    <div class="text-sm text-slate-300">{{ currentMode === 'focus' ? 'MODO CONCENTRACIÓN' : 'DESCANSO' }}</div>
+    <div class="text-xs text-slate-400 mt-2">Sesión {{ sessionCount }}</div>
+  </div>
+
+  <!-- Controles -->
+  <div class="flex items-center space-x-4">
+    <button class="p-2 rounded-full bg-slate-700 hover:bg-slate-600 transition-colors">
+      <svg class="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+    </button>
+
+    <button class="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-medium transition-colors flex items-center space-x-2">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M8 5v14l11-7z"/>
+      </svg>
+      <span>{{ isRunning ? 'Pausar' : 'Comenzar' }}</span>
+    </button>
+
+    <button class="p-2 rounded-full bg-slate-700 hover:bg-slate-600 transition-colors">
+      <svg class="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"/>
+      </svg>
+    </button>
+  </div>
+</div>

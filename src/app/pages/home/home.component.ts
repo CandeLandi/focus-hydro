@@ -1,12 +1,11 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from '../../shared/components/header/header.component';
-
+import { TimerComponent } from '../../features/timer/timer.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent],
+  imports: [HeaderComponent, TimerComponent],
   templateUrl: './home.component.html',
   styles: []
 })

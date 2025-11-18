@@ -1,9 +1,9 @@
-<div class="min-h-screen bg-slate-950 text-slate-100">
-  <!-- Header con navegación -->
-  <app-header />
+<div class="h-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden">
+  <app-header class="shrink-0" />
 
-  <!-- Contenido principal -->
-  <main class="container mx-auto px-4 py-6">
-    <router-outlet />
+  <main class="flex-1 overflow-hidden min-h-0">
+    <div class="max-w-6xl mx-auto px-6 h-full py-4">
+      <app-timer />
+    </div>
   </main>
 </div>

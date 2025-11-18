@@ -1,3 +1,70 @@
 @import "tailwindcss";
+@import "primeicons/primeicons.css";
 
-/* You can add global styles to this file, and also import other style files */
+.task-scroll {
+  scrollbar-width: none;
+}
+
+.task-scroll:hover {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+}
+
+.task-scroll::-webkit-scrollbar {
+  width: 0;
+  transition: width 0.2s ease;
+}
+
+.task-scroll:hover::-webkit-scrollbar {
+  width: 8px;
+}
+
+.task-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.task-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+}
+
+.session-intro-dialog .p-dialog {
+  background: rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 0.875rem;
+  box-shadow: 0 25px 50px -30px rgba(6, 182, 212, 0.3);
+  backdrop-filter: blur(16px);
+}
+
+.session-intro-dialog .p-dialog-header {
+  background: transparent;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  padding: 1.25rem 1.5rem;
+  border-radius: 0.875rem 0.875rem 0 0;
+}
+
+.session-intro-dialog .p-dialog-content {
+  background: transparent;
+  padding: 1.5rem;
+}
+
+.session-intro-dialog .p-dialog-footer {
+  background: transparent;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  padding: 1rem 1.5rem;
+  border-radius: 0 0 0.875rem 0.875rem;
+}
+
+.session-intro-dialog .p-dialog-header-icons {
+  display: none;
+}
+
+.task-feedback-toast .p-toast-message {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  color: rgba(226, 232, 240, 0.95);
+  backdrop-filter: blur(12px);
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 40px -28px rgba(6, 182, 212, 0.45);
+}

@@ -1,4 +1,4 @@
-import { Component, Input, computed } from '@angular/core';
+import { Component, input, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export interface WaterBottleProps {
@@ -32,15 +32,15 @@ export interface WaterBottleProps {
   `]
 })
 export class WaterBottleComponent {
-  @Input() progress: number = 0;
-  @Input() isBreak: boolean = false;
+  progress = input.required<number>();
+  isBreak = input.required<boolean>();
 
   // Exponer Math para el template
   Math = Math;
 
   // Computed properties para el nivel de agua
   waterLevel = computed(() => {
-    return this.isBreak ? Math.min(this.progress, 100) : Math.max(100 - this.progress, 0);
+    return this.isBreak() ? Math.min(this.progress(), 100) : Math.max(100 - this.progress(), 0);
   });
 
   waterHeight = computed(() => {

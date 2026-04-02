@@ -24,6 +24,16 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/app/shared/images",
+                "output": "images"
+              },
+              {
+                "glob": "favicon.ico",
+                "input": ".",
+                "output": "/"
               }
             ],
             "styles": [
@@ -82,6 +92,16 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/app/shared/images",
+                "output": "images"
+              },
+              {
+                "glob": "favicon.ico",
+                "input": ".",
+                "output": "/"
               }
             ],
             "styles": [

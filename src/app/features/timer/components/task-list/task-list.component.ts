@@ -1,171 +1,164 @@
-import { Component, signal, computed, OnInit, effect, input } from '@angular/core';
+import { Component, computed, effect, output, signal, inject, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ButtonModule } from 'primeng/button';
-import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
 import { QuickStatsComponent, StatCard } from '../../../../components/shared/quick-stats/quick-stats.component';
-
-export interface Task {
-  id: string;
-  text: string;
-  completed: boolean;
-  createdAt: number;
-}
+import { CelebrationStats } from '../../../../shared/models/celebration.model';
+import { HydroFocusDailyService } from '../../../../core/services/hydrofocus-daily.service';
+import { HydroTask } from '../../../../shared/models/daily.model';
 
 @Component({
   selector: 'app-task-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, InputTextModule, CheckboxModule, ButtonModule, ToastModule, QuickStatsComponent],
+  imports: [CommonModule, FormsModule, InputTextModule, CheckboxModule, ButtonModule, QuickStatsComponent],
   templateUrl: './task-list.component.html',
-  styles: [],
-  providers: [MessageService],
-  host: {
-    class: 'block h-full'
-  }
+  styleUrl: './task-list.component.css',
+  host: { class: 'block h-full' }
 })
-export class TaskListComponent implements OnInit {
-  sessionsCompleted = input<number>(0);
+export class TaskListComponent {
+  private dailyService = inject(HydroFocusDailyService);
+  private destroyRef = inject(DestroyRef);
+  tasks = this.dailyService.tasks;
+  completedSessions = this.dailyService.completedSessions;
+  totalFocusMinutes = this.dailyService.totalFocusMinutes;
 
-  tasks = signal<Task[]>([]);
-  newTask: string = '';
+  newTask = '';
+  celebrationReached = output<CelebrationStats>();
+  shareSummaryRequest = output<CelebrationStats>();
+  /** Primera pulsación: muestra ✓ en el botón; segunda: elimina. */
+  pendingDeleteTaskId = signal<string | null>(null);
 
-  private readonly STORAGE_KEY = 'hydrofocus-tasks';
+  private hasTriggeredCelebration = false;
+  private pendingDeleteClearTimer: ReturnType<typeof setTimeout> | null = null;
 
-  // Computed properties
   completedCount = computed(() => this.tasks().filter(t => t.completed).length);
-
-  today = computed(() => {
-    return new Date().toLocaleDateString("es-ES", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    });
-  });
-
+  today = computed(() => new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }));
   completionPercentage = computed(() => {
     const total = this.tasks().length;
     return total > 0 ? Math.round((this.completedCount() / total) * 100) : 0;
   });
+  allTasksCompleted = computed(() => {
+    const all = this.tasks();
+    return all.length > 0 && all.every(t => t.completed);
+  });
 
-  // Estadísticas para mostrar
+  pendingTasks = computed(() => this.tasks().filter(t => !t.completed));
+  doneTasks = computed(() => this.tasks().filter(t => t.completed));
+
   stats = computed<StatCard[]>(() => [
-    {
-      value: this.completedCount(),
-      label: 'Completadas Hoy',
-      color: 'blue'
-    },
-    {
-      value: `${this.sessionsCompleted()}h`,
-      label: 'Enfoque Total',
-      color: 'green'
-    },
-    {
-      value: `${this.completionPercentage()}%`,
-      label: 'Progreso',
-      color: 'green'
-    }
+    { value: this.completedSessions().toString(), label: 'sesiones', color: 'blue' },
+    { value: this.formatFocusTime(this.totalFocusMinutes()), label: 'min foco', color: 'green' },
+    { value: `${this.completionPercentage()}%`, label: 'tareas', color: 'cyan' }
   ]);
 
-  pendingDeleteTask = signal<{ id: string; text: string } | null>(null);
+  constructor() {
+    this.destroyRef.onDestroy(() => this.clearPendingDeleteTimer());
 
-  constructor(
-    private messageService: MessageService
-  ) {
-    // Effect para guardar las tareas automáticamente cuando cambian
     effect(() => {
-      const tasks = this.tasks();
-      this.saveTasks(tasks);
-    });
-  }
+      const allCompleted = this.allTasksCompleted();
+      const totalTasks = this.tasks().length;
+      const focusMin = this.totalFocusMinutes();
 
-  ngOnInit(): void {
-    this.loadTasks();
-  }
-
-  private loadTasks(): void {
-    try {
-      const savedTasks = localStorage.getItem(this.STORAGE_KEY);
-      if (savedTasks) {
-        this.tasks.set(JSON.parse(savedTasks));
+      if (allCompleted && totalTasks > 0 && !this.hasTriggeredCelebration) {
+        this.hasTriggeredCelebration = true;
+        this.celebrationReached.emit({
+          tasksCompleted: totalTasks,
+          totalFocusTime: this.formatFocusTime(focusMin),
+          completionPercentage: 100,
+          date: new Date()
+        });
+      } else if (!allCompleted && totalTasks > 0) {
+        this.hasTriggeredCelebration = false;
       }
-    } catch (error) {
-      console.error('Error loading tasks:', error);
-    }
-  }
+    });
 
-  private saveTasks(tasks: Task[]): void {
-    try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(tasks));
-    } catch (error) {
-      console.error('Error saving tasks:', error);
-    }
+    effect(
+      () => {
+        this.tasks();
+        if (this.pendingDeleteTaskId() !== null) {
+          const ids = new Set(this.tasks().map(t => t.id));
+          if (!ids.has(this.pendingDeleteTaskId()!)) {
+            this.clearPendingDeleteState();
+          }
+        }
+      },
+      { allowSignalWrites: true }
+    );
   }
 
   addTask(): void {
-    const trimmedTask = this.newTask.trim();
-    if (trimmedTask) {
-      const newTask: Task = {
-        id: Date.now().toString(),
-        text: trimmedTask,
-        completed: false,
-        createdAt: Date.now(),
-      };
-      this.tasks.update(tasks => [...tasks, newTask]);
-      this.newTask = '';
-    }
-  }
-
-  private deleteTask(id: string): void {
-    this.tasks.update(tasks => tasks.filter(task => task.id !== id));
-  }
-
-  confirmDeletePrompt(task: Task): void {
-    this.pendingDeleteTask.set({ id: task.id, text: task.text });
-    this.messageService.add({
-      key: 'confirmDelete',
-      severity: 'warn',
-      summary: '¿Eliminar tarea?',
-      detail: `"${task.text}"`,
-      sticky: true
-    });
-  }
-
-  confirmDelete(): void {
-    const task = this.pendingDeleteTask();
-    if (task) {
-      this.deleteTask(task.id);
-      this.pendingDeleteTask.set(null);
-      this.messageService.clear('confirmDelete');
-      this.messageService.add({
-        key: 'taskFeedback',
-        severity: 'success',
-        summary: 'Tarea eliminada',
-        detail: `"${task.text}" ha sido eliminada`,
-        life: 2000
-      });
-    }
-  }
-
-  cancelDelete(): void {
-    this.pendingDeleteTask.set(null);
-    this.messageService.clear('confirmDelete');
-  }
-
-  onKeyDown(event: KeyboardEvent): void {
-    if (event.key === 'Enter') {
-      this.addTask();
-    }
+    const text = this.newTask.trim();
+    if (!text) return;
+    const task: HydroTask = {
+      id: Date.now().toString(),
+      text,
+      completed: false,
+      createdAt: Date.now()
+    };
+    this.dailyService.addTask(task);
+    this.newTask = '';
   }
 
   toggleTaskCompletion(taskId: string, completed: boolean): void {
-    this.tasks.update(tasks =>
-      tasks.map(task =>
-        task.id === taskId ? { ...task, completed } : task
-      )
-    );
+    this.dailyService.updateTask(taskId, {
+      completed,
+      completedAt: completed ? Date.now() : undefined
+    });
+  }
+
+  onDeleteButtonClick(task: HydroTask, event: MouseEvent): void {
+    event.stopPropagation();
+    if (this.pendingDeleteTaskId() === task.id) {
+      this.dailyService.removeTask(task.id);
+      this.clearPendingDeleteState();
+      return;
+    }
+    this.clearPendingDeleteTimer();
+    this.pendingDeleteTaskId.set(task.id);
+    this.pendingDeleteClearTimer = setTimeout(() => {
+      this.pendingDeleteTaskId.set(null);
+      this.pendingDeleteClearTimer = null;
+    }, 4500);
+  }
+
+  private clearPendingDeleteTimer(): void {
+    if (this.pendingDeleteClearTimer !== null) {
+      clearTimeout(this.pendingDeleteClearTimer);
+      this.pendingDeleteClearTimer = null;
+    }
+  }
+
+  private clearPendingDeleteState(): void {
+    this.clearPendingDeleteTimer();
+    this.pendingDeleteTaskId.set(null);
+  }
+
+  onKeyDown(e: KeyboardEvent): void {
+    if (e.key === 'Enter') this.addTask();
+  }
+
+  private formatFocusTime(minutes: number): string {
+    if (minutes === 0) return '0m';
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    if (h > 0 && m > 0) return `${h}h ${m}m`;
+    if (h > 0) return `${h}h`;
+    return `${m}m`;
+  }
+
+  resetCelebrationFlag(): void {
+    this.hasTriggeredCelebration = false;
+  }
+
+  emitShareSummary(): void {
+    if (!this.allTasksCompleted() || this.tasks().length === 0) return;
+    this.shareSummaryRequest.emit({
+      tasksCompleted: this.tasks().length,
+      totalFocusTime: this.formatFocusTime(this.totalFocusMinutes()),
+      completionPercentage: 100,
+      date: new Date()
+    });
   }
 }
-

@@ -11,25 +11,7 @@ export interface WaterBottleProps {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './water-bottle.component.html',
-  styles: [`
-    @keyframes wave {
-      0%, 100% { transform: translateX(0) scaleY(1); }
-      50% { transform: translateX(10px) scaleY(1.1); }
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-8px); }
-    }
-
-    .animate-wave {
-      animation: wave 3s ease-in-out infinite;
-    }
-
-    .animate-float {
-      animation: float 4s ease-in-out infinite;
-    }
-  `]
+  styleUrl: './water-bottle.component.css'
 })
 export class WaterBottleComponent {
   progress = input.required<number>();
@@ -51,8 +33,21 @@ export class WaterBottleComponent {
     return 94 + 207 - this.waterHeight();
   });
 
-  // Métodos para verificar si mostrar elementos
   shouldShowWaves = computed(() => this.waterLevel() > 3);
   shouldShowBubbles = computed(() => this.waterLevel() > 10 && this.waterHeight() > 40);
   shouldShowMoreBubbles = computed(() => this.waterHeight() > 80);
+
+  /** Organic wavy water surface path (curva suave) */
+  waterSurfacePath = computed(() => {
+    const y = this.waterY();
+    const h = 5;
+    return `M 49 ${y} Q 80 ${y - 2} 100 ${y} T 151 ${y} L 151 ${y + h} L 49 ${y + h} Z`;
+  });
+
+  /** Progress ring: circumference and offset */
+  ringCircumference = 2 * Math.PI * 92;
+  ringOffset = computed(() => {
+    const p = this.isBreak() ? this.progress() : 100 - this.progress();
+    return this.ringCircumference * (1 - Math.min(100, Math.max(0, p)) / 100);
+  });
 }

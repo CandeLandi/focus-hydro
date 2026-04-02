@@ -1,14 +1,23 @@
-<div class="grid grid-cols-3 gap-4 mb-6">
-  @for (stat of stats; track $index) {
-    <div class="bg-slate-900 rounded-lg p-4 border border-slate-800/50">
-      <div class="text-center">
-        <div class="text-2xl font-bold mb-1" [class]="getColorClasses(stat.color)">
+<div class="mb-3 sm:mb-[18px]">
+  <h4 class="mb-2.5 sm:mb-3 text-[12px] sm:text-[14px] font-bold uppercase tracking-[0.08em] text-[rgba(210,220,245,0.68)]">
+    Progreso de hoy
+  </h4>
+  <div class="grid grid-cols-3 items-stretch overflow-hidden rounded-[14px] sm:rounded-[18px] border border-[rgba(106,146,235,0.16)] bg-[linear-gradient(180deg,rgba(15,26,49,0.62)_0%,rgba(10,19,37,0.78)_100%)]">
+    @for (stat of stats; track $index; let i = $index) {
+      <div class="relative flex min-h-[68px] sm:min-h-[76px] flex-1 flex-col items-center justify-center px-2.5 sm:px-3 py-[0.62rem] sm:py-[0.8rem]">
+        @if (i > 0 && $index < 3) {
+          <span class="pointer-events-none absolute bottom-[18%] left-0 top-[18%] w-px bg-[rgba(133,163,222,0.2)] max-[459px]:hidden"></span>
+        }
+        <div
+          class="text-[1.72rem] sm:text-[2rem] font-bold leading-none tracking-[-0.03em] text-[rgba(241,245,249,0.95)]"
+          [class.text-[#49e6ff]]="isHighlight(stat)"
+        >
           {{ stat.value }}
         </div>
-        <div class="text-xs text-slate-400 font-medium">
+        <div class="mt-[0.3rem] sm:mt-[0.35rem] text-center text-[0.66rem] sm:text-[0.72rem] uppercase tracking-[0.06em] text-[rgba(180,197,228,0.74)]">
           {{ stat.label }}
         </div>
       </div>
-    </div>
-  }
+    }
+  </div>
 </div>

@@ -1,0 +1,126 @@
+.bottle-wrapper {
+  filter: drop-shadow(0 0 20px rgba(6, 182, 212, 0.08));
+  overflow: visible;
+  isolation: isolate;
+}
+
+/* Halos detrás de la botella */
+.halo-container {
+  position: absolute;
+  inset: -26% -34% -34%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: -2;
+}
+.halo {
+  position: absolute;
+  border-radius: 50%;
+  width: 128%;
+  aspect-ratio: 1;
+  max-height: 128%;
+}
+.halo-diffuse {
+  width: 148%;
+  aspect-ratio: 1;
+  max-height: 148%;
+  background: radial-gradient(circle, rgba(52, 216, 255, 0.055) 0%, rgba(52, 216, 255, 0.018) 36%, transparent 72%);
+  filter: blur(20px);
+  opacity: 0.58;
+}
+.halo-bright {
+  width: 132%;
+  aspect-ratio: 1;
+  max-height: 132%;
+  border: 2px solid rgba(59, 232, 255, 0.34);
+  box-shadow:
+    0 0 18px rgba(59, 232, 255, 0.2),
+    0 0 52px rgba(59, 232, 255, 0.07);
+  opacity: 0.5;
+  background: transparent;
+}
+@keyframes haloBreath {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.02); opacity: 1; }
+}
+.halo-breath {
+  animation: haloBreath 4s ease-in-out infinite;
+}
+
+/* Brillos orbitales (no simétricos) */
+.halo-orbital {
+  position: absolute;
+  width: 30%;
+  height: 30%;
+  max-width: 68px;
+  max-height: 68px;
+  border-radius: 50%;
+  border: 1px solid rgba(59, 232, 255, 0.14);
+  border-left-color: transparent;
+  border-bottom-color: transparent;
+  pointer-events: none;
+}
+.halo-orbital-1 { top: 10%; right: 18%; transform: rotate(25deg); opacity: 0.3; }
+.halo-orbital-2 { bottom: 20%; left: 10%; transform: rotate(-40deg); opacity: 0.2; width: 22%; height: 22%; }
+.halo-orbital-3 { top: 32%; left: 20%; transform: rotate(120deg); opacity: 0.16; width: 18%; height: 18%; }
+
+.bottle-ring-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+.ring-track {
+  stroke: rgba(6, 182, 212, 0.15);
+  stroke-width: 3;
+}
+.ring-progress {
+  filter: drop-shadow(0 0 6px rgba(59, 232, 255, 0.4));
+}
+
+.bottle-svg {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: filter 0.4s ease;
+  z-index: 2;
+}
+.bottle-wrapper:hover .bottle-svg {
+  filter: drop-shadow(0 0 24px rgba(76, 232, 255, 0.15));
+}
+
+/* Water surface wave */
+.water-surface {
+  animation: hydroWave 5.5s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes hydroWave {
+  0%   { transform: translateX(0) translateY(0); }
+  25%  { transform: translateX(1px) translateY(-1px); }
+  50%  { transform: translateX(0) translateY(1px); }
+  75%  { transform: translateX(-1px) translateY(-1px); }
+  100% { transform: translateX(0) translateY(0); }
+}
+
+/* Bubbles rising */
+.bubble {
+  animation: bubbleRise 4s ease-in-out infinite;
+  opacity: 0.5;
+}
+.bubble-1 { animation-duration: 3.5s; animation-delay: 0s; }
+.bubble-2 { animation-duration: 4.2s; animation-delay: 0.5s; }
+.bubble-3 { animation-duration: 3.8s; animation-delay: 1s; }
+.bubble-4 { animation-duration: 4.5s; animation-delay: 0.3s; }
+.bubble-5 { animation-duration: 3.2s; animation-delay: 1.2s; }
+@keyframes bubbleRise {
+  0%   { transform: translateY(0); opacity: 0.35; }
+  50%  { opacity: 0.8; }
+  100% { transform: translateY(-14px); opacity: 0; }
+}
+
+.glass-reflection {
+  filter: blur(1px);
+}

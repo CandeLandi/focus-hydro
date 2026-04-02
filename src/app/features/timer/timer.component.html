@@ -1,3 +1,4 @@
+<!-- Intro primera sesión / primer descanso — position top (PrimeNG Dialog) -->
 <p-dialog
   [visible]="sessionIntroVisible()"
   (onHide)="closeSessionIntro()"
@@ -6,118 +7,342 @@
   [closable]="false"
   [draggable]="false"
   [resizable]="false"
+  [position]="dialogPosition.intro"
   [breakpoints]="{ '575px': '90vw', '768px': '75vw' }"
-  [style]="{ width: '50vw', maxWidth: '420px' }"
-  [styleClass]="'session-intro-dialog'"
+  [style]="{ width: 'min(92vw, 420px)' }"
+  styleClass="hydro-dialog session-intro-dialog"
+  appendTo="body"
   baseZIndex="11000"
 >
   <ng-template pTemplate="header">
-    <div class="flex items-center gap-3">
-      <div [ngClass]="isBreak() ? 'w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30' : 'w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30'">
-        <span class="pi text-lg" [ngClass]="isBreak() ? 'pi-glass text-emerald-300' : 'pi-bolt text-cyan-300'"></span>
+    <div class="hydro-dialog-title-row">
+      <div
+        class="hydro-dialog-icon"
+        [class.hydro-dialog-icon-emerald]="isBreak()"
+        [class.hydro-dialog-icon-cyan]="!isBreak()"
+      >
+        <span class="pi text-lg" [ngClass]="isBreak() ? 'pi-glass' : 'pi-bolt'"></span>
       </div>
-      <div>
-        <h3 class="text-base font-semibold text-white m-0">{{ isBreak() ? 'Momento de Descanso' : 'Sesión Pomodoro' }}</h3>
-        <p class="text-xs text-slate-400 m-0 mt-0.5">{{ isBreak() ? 'Hidratación y recuperación' : 'Enfoque y productividad' }}</p>
+      <div class="min-w-0">
+        <h3 class="hydro-dialog-title">{{ isBreak() ? 'Pausa breve' : 'Un bloque de foco cambia el día' }}</h3>
+        <p class="hydro-dialog-subtitle">{{ isBreak() ? 'Hidratación y recuperación' : timerConfig().focusDuration + ' minutos, una cosa a la vez' }}</p>
       </div>
     </div>
   </ng-template>
-
-  <div class="space-y-4 py-2">
+  <div class="hydro-dialog-body">
     @if (!isBreak()) {
-      <div class="space-y-3">
-        <p class="text-sm leading-relaxed text-slate-200">
-          25 minutos de foco absoluto, luego un respiro corto. Esa es la fórmula Pomodoro para mantenerte productivo sin quemarte.
-        </p>
-        <p class="text-sm leading-relaxed text-cyan-200/80">
-          Elige tu próxima misión y confía en el ritmo: cada bloque te acerca a tus metas. 🚀
-        </p>
-      </div>
+      <p class="hydro-dialog-text m-0">
+        Enfocate un rato, después descansás. Elegí una tarea y arrancá cuando estés listo.
+      </p>
     } @else {
-      <div class="space-y-3">
-        <p class="text-sm leading-relaxed text-slate-200">
-          Descansa, hidrátate y baja la velocidad. Este momento recarga tu energía para el siguiente ciclo.
-        </p>
-        <p class="text-sm leading-relaxed text-emerald-200/80">
-          Alarga un poco las piernas, toma agua y vuelve con la mente despejada. 💧
-        </p>
-      </div>
+      <p class="hydro-dialog-text m-0">
+        Estirá un poco y tomá agua. {{ timerConfig().breakDuration }} minutos para volver mejor.
+      </p>
     }
   </div>
-
   <ng-template pTemplate="footer">
-    <div class="flex justify-end gap-2">
-      <p-button
-        label="Continuar"
-        (onClick)="closeSessionIntro()"
-        styleClass="!px-5 !py-2 !rounded-lg !bg-gradient-to-r !from-cyan-500 !via-cyan-400 !to-cyan-300 hover:!opacity-95 !text-slate-900 !text-sm !font-semibold !tracking-wide !shadow-lg !shadow-cyan-500/20">
-      </p-button>
+    <div class="hydro-dialog-footer-actions hydro-dialog-footer-single">
+      <p-button label="Continuar" (onClick)="closeSessionIntro()" styleClass="hydro-dialog-btn-primary" />
     </div>
   </ng-template>
 </p-dialog>
 
-<div class="flex flex-col lg:flex-row gap-4 h-full">
-  <!-- Columna izquierda: Botella y controles -->
-  <div class="flex flex-col lg:w-1/2 h-full">
-    <div class="bg-slate-900 rounded-lg p-4 bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-500/5 backdrop-blur border-2 border-cyan-500/20 shadow-2xl shadow-cyan-500/10 flex flex-col h-full">
-      <div class="flex flex-col items-center justify-center gap-3 sm:gap-4 flex-1 w-full min-h-0 overflow-hidden">
-        <!-- Marcador de sesión -->
-        <div class="flex items-center justify-center gap-2 text-xs text-slate-400 shrink-0">
-          <span class="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
-          Sesión {{ sessionsCompleted() + 1 }}
+<!-- Confirmación: pasar al descanso sin completar el bloque de foco (sin header: solo texto + botones) -->
+<p-dialog
+  [visible]="skipConfirmVisible()"
+  (onHide)="cancelSkipConfirm()"
+  [modal]="true"
+  [closable]="false"
+  [dismissableMask]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [position]="dialogPosition.center"
+  [style]="{ width: 'min(92vw, 420px)' }"
+  styleClass="hydro-dialog skip-confirm-dialog hydro-dialog--no-header"
+  appendTo="body"
+  baseZIndex="11001"
+>
+  <div class="hydro-dialog-body hydro-dialog-body--solo">
+    <p class="hydro-dialog-text m-0">
+      Si pasás al descanso ahora, este bloque no sumará a las sesiones completadas ni al tiempo de enfoque del día.
+    </p>
+  </div>
+  <ng-template pTemplate="footer">
+    <div class="hydro-dialog-footer-actions">
+      <p-button label="Volver" (onClick)="cancelSkipConfirm()" styleClass="hydro-dialog-btn-secondary" />
+      <p-button label="Sí, ir al descanso" (onClick)="confirmSkipToBreak()" styleClass="hydro-dialog-btn-muted" />
+    </div>
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  [visible]="shareNamePromptVisible()"
+  [modal]="true"
+  [dismissableMask]="false"
+  [closable]="false"
+  [draggable]="false"
+  [resizable]="false"
+  [position]="dialogPosition.center"
+  [style]="{ width: 'min(92vw, 440px)' }"
+  styleClass="hydro-dialog share-name-dialog"
+  appendTo="body"
+  baseZIndex="11003"
+>
+  <ng-template pTemplate="header">
+    <div class="hydro-dialog-title-row">
+      <div class="hydro-dialog-icon hydro-dialog-icon-cyan">
+        <span class="pi pi-user-edit"></span>
+      </div>
+      <div class="min-w-0">
+        <h3 class="hydro-dialog-title">¿Querés poner tu nombre para compartir tu progreso?</h3>
+      </div>
+    </div>
+  </ng-template>
+  <div class="hydro-dialog-body">
+    <label class="share-name-field" for="share-name-input">
+      <span>Nombre</span>
+      <input
+        id="share-name-input"
+        type="text"
+        maxlength="40"
+        [value]="shareNameInput()"
+        (input)="onShareNameInput($any($event.target).value)"
+        class="share-name-input"
+        placeholder="Ej: Landi"
+      />
+    </label>
+    @if (shareNameError()) {
+      <p class="share-name-error">{{ shareNameError() }}</p>
+    }
+  </div>
+  <ng-template pTemplate="footer">
+    <div class="hydro-dialog-footer-actions">
+      <p-button label="Seguir sin nombre" (onClick)="continueWithoutName()" styleClass="hydro-dialog-btn-secondary" />
+      <p-button label="Guardar y compartir" (onClick)="saveNameAndContinue()" styleClass="hydro-dialog-btn-primary" />
+    </div>
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  [visible]="settingsVisible()"
+  (visibleChange)="settingsVisible.set($event)"
+  (onHide)="closeSettingsDialog()"
+  [modal]="true"
+  [closable]="false"
+  [draggable]="false"
+  [resizable]="false"
+  [position]="dialogPosition.center"
+  [style]="{ width: 'min(92vw, 460px)' }"
+  styleClass="hydro-dialog pomodoro-settings-dialog"
+  appendTo="body"
+  baseZIndex="11004"
+>
+  <ng-template pTemplate="header">
+    <div class="hydro-dialog-title-row pomodoro-settings-header">
+      <div class="min-w-0">
+        <h3 class="hydro-dialog-title">Personalizá tu Pomodoro</h3>
+        <p class="hydro-dialog-subtitle">Elegí cuánto duran tus sesiones de enfoque y descanso.</p>
+      </div>
+      <div class="pomodoro-settings-header-actions">
+        <button
+          type="button"
+          class="pomodoro-settings-icon-btn pomodoro-settings-icon-btn-save"
+          (click)="savePomodoroSettings()"
+          aria-label="Guardar cambios"
+          title="Guardar cambios"
+        >
+          <span class="pi pi-check"></span>
+        </button>
+        <button
+          type="button"
+          class="pomodoro-settings-icon-btn"
+          (click)="closeSettingsDialog()"
+          aria-label="Cerrar"
+          title="Cerrar"
+        >
+          <span class="pi pi-times"></span>
+        </button>
+      </div>
+    </div>
+  </ng-template>
+
+  <div class="hydro-dialog-body">
+    <div class="mb-3 flex flex-wrap items-center gap-2">
+      <button type="button" class="pomodoro-preset-chip" (click)="applyPomodoroPreset(25, 5)">25/5 Clásico</button>
+      <button type="button" class="pomodoro-preset-chip" (click)="applyPomodoroPreset(50, 10)">50/10 Profundo</button>
+      <button type="button" class="pomodoro-preset-chip" (click)="applyPomodoroPreset(90, 15)">90/15 Extendido</button>
+    </div>
+
+    <div class="pomodoro-settings-grid">
+      <label class="pomodoro-settings-field">
+        <span>Sesión de enfoque</span>
+        <p-inputNumber
+          [ngModel]="settingsFocusMinutes()"
+          (ngModelChange)="onSettingsFocusInput($event)"
+          min="1"
+          max="180"
+          step="1"
+          [showButtons]="true"
+          buttonLayout="stacked"
+          incrementButtonIcon="pi pi-chevron-up"
+          decrementButtonIcon="pi pi-chevron-down"
+          class="pomodoro-settings-input"
+        />
+        <span class="pomodoro-settings-unit">minutos</span>
+      </label>
+      <label class="pomodoro-settings-field">
+        <span>Descanso corto</span>
+        <p-inputNumber
+          [ngModel]="settingsBreakMinutes()"
+          (ngModelChange)="onSettingsBreakInput($event)"
+          min="1"
+          max="60"
+          step="1"
+          [showButtons]="true"
+          buttonLayout="stacked"
+          incrementButtonIcon="pi pi-chevron-up"
+          decrementButtonIcon="pi pi-chevron-down"
+          class="pomodoro-settings-input"
+        />
+        <span class="pomodoro-settings-unit">minutos</span>
+      </label>
+    </div>
+
+    <p class="pomodoro-settings-helper">
+      Descanso largo cada {{ timerConfig().sessionsUntilLongBreak }} sesiones.
+    </p>
+
+    @if (settingsError()) {
+      <div class="mt-3 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-[12px] text-red-200">
+        <span class="pi pi-exclamation-triangle mr-2 text-[12px]"></span>
+        {{ settingsError() }}
+      </div>
+    }
+
+  </div>
+
+</p-dialog>
+
+<p-dialog
+  [visible]="closeDayConfirmVisible()"
+  (onHide)="cancelCloseDay()"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [position]="dialogPosition.center"
+  [style]="{ width: 'min(92vw, 420px)' }"
+  styleClass="hydro-dialog close-day-confirm-dialog"
+  appendTo="body"
+  baseZIndex="11002"
+>
+  <ng-template pTemplate="header">
+    <div class="hydro-dialog-title-row">
+      <div class="hydro-dialog-icon hydro-dialog-icon-cyan">
+        <span class="pi pi-calendar-times"></span>
+      </div>
+      <div class="min-w-0">
+        <h3 class="hydro-dialog-title">Cerrar el día</h3>
+        <p class="hydro-dialog-subtitle">Reiniciá tareas y sesiones para mañana</p>
+      </div>
+    </div>
+  </ng-template>
+  <div class="hydro-dialog-body">
+    <p class="hydro-dialog-text m-0">
+      ¿Cerramos el día y reiniciamos? Se limpiarán tareas y sesiones.
+    </p>
+  </div>
+  <ng-template pTemplate="footer">
+    <div class="hydro-dialog-footer-actions">
+      <p-button label="Seguir viendo" (onClick)="cancelCloseDay()" styleClass="hydro-dialog-btn-secondary" />
+      <p-button label="Cerrar día" (onClick)="confirmCloseDay()" styleClass="hydro-dialog-btn-primary" />
+    </div>
+  </ng-template>
+</p-dialog>
+
+<div class="flex flex-col lg:flex-row gap-3 sm:gap-4 lg:gap-5 h-auto lg:h-full min-h-0">
+  <!-- Izquierda: botella + timer + controles -->
+  <div class="flex flex-col lg:w-1/2 h-auto lg:h-full min-h-0">
+    <div class="timer-card hydro-panel flex flex-col h-auto lg:h-full min-h-0" [class.timer-card-active]="isRunning()">
+      <div class="flex flex-col items-center justify-center gap-1 sm:gap-2 lg:flex-1 w-full min-h-0">
+        <div class="session-label shrink-0 w-full flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-center">
+          <span class="session-dot" [class.session-dot-pulse]="isRunning()"></span>
+          <span>Sesión {{ sessionsCompleted() + 1 }}{{ nextIsLongBreak() ? ' · próximo: descanso largo' : '' }}</span>
+          @if (sessionsCompleted() > 0) {
+            <button type="button" (click)="resetSessions()" class="session-reset-btn ml-1 p-1.5 rounded-lg opacity-60 hover:opacity-100 transition-all" title="Reiniciar sesiones">
+              <span class="pi pi-refresh text-xs"></span>
+            </button>
+          }
+        </div>
+        <div class="pomodoro-config-row">
+          <button type="button" class="pomodoro-config-chip" (click)="openSettingsDialog()">
+            <span class="pi pi-clock"></span>
+            <span>Pomodoro {{ timerConfig().focusDuration }}/{{ timerConfig().breakDuration }}</span>
+          </button>
+          <button type="button" class="pomodoro-config-btn" (click)="openSettingsDialog()">
+            <span class="pi pi-sliders-h"></span>
+            Ajustar
+          </button>
         </div>
 
-        <div class="flex justify-center shrink-0 w-full">
-          <div class="w-40 sm:w-48 md:w-52 lg:w-56 xl:w-72 2xl:w-80">
+        <!-- Botella + halos -->
+        <div class="flex min-h-[220px] sm:min-h-[260px] lg:min-h-[340px] lg:flex-1 justify-center items-center w-full bottle-stage">
+          <div class="h-[clamp(220px,42vh,360px)] sm:h-[clamp(260px,44vh,420px)] lg:h-full aspect-[7/10] w-auto max-w-full bottle-container">
             <app-water-bottle [progress]="timerProgress()" [isBreak]="isBreak()" />
           </div>
         </div>
 
-        <!-- Timer -->
-        <div class="text-center space-y-1 sm:space-y-2 w-full shrink-0">
-          <div class="text-[10px] sm:text-xs font-semibold text-cyan-400/80 uppercase tracking-wide">
-            {{ isBreak() ? "Momento de Hidratación" : "Modo Concentración" }}
-          </div>
-
-          <div class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-mono tabular-nums bg-gradient-to-br from-cyan-500 via-cyan-400 to-cyan-300 bg-clip-text text-transparent drop-shadow-lg px-2 sm:px-4 py-1 sm:py-2">
-            {{ formatTime(timeRemaining()) }}
-          </div>
+        <div class="timer-display-section text-center w-full shrink-0">
+          <div class="timer-label">{{ isBreak() ? (isLongBreak() ? "DESCANSO LARGO" : "HIDRATACIÓN") : "CONCENTRACIÓN" }}</div>
+          <div class="timer-time">{{ formatTime(timeRemaining()) }}</div>
+          <p class="timer-microcopy">{{ timerMicrocopy() }}</p>
         </div>
+      </div>
 
-        <!-- Controles -->
-        <div class="flex items-center justify-center gap-3 w-full shrink-0">
-        <button
-          (click)="resetTimer()"
-          class="flex-1 p-2 rounded-lg bg-slate-800/50 backdrop-blur border border-slate-700 hover:bg-slate-700 transition-colors flex items-center justify-center">
-          <span class="pi pi-refresh text-cyan-200 text-lg leading-none"></span>
+      <div class="timer-buttons">
+        <button type="button" (click)="resetTimer()" class="timer-btn timer-btn-secondary" title="Reiniciar bloque">
+          <span class="pi pi-refresh"></span>
+          <span class="timer-btn-text">Reiniciar</span>
         </button>
-        <button
-          (click)="toggleTimer()"
-          class="flex-[1.4] h-11 bg-gradient-to-r from-cyan-500/90 via-cyan-400/90 to-cyan-300/90 hover:opacity-95 transition-all shadow-lg shadow-cyan-500/20 rounded-lg flex items-center justify-center">
-          <span [ngClass]="isRunning() ? 'pi pi-pause text-white text-xl' : 'pi pi-play text-white text-xl'"></span>
+        <button type="button" (click)="toggleTimer()" class="timer-btn timer-btn-primary">
+          <span [ngClass]="isRunning() ? 'pi pi-pause' : 'pi pi-play'"></span>
+          <span class="timer-btn-text">{{ mainButtonLabel() }}</span>
         </button>
-        <button
-          (click)="skipToBreak()"
-          class="group flex-1 p-2 rounded-lg bg-gradient-to-br from-emerald-500/10 to-teal-500/10 backdrop-blur border border-emerald-500/20 hover:from-emerald-500/20 hover:to-teal-500/20 transition-all duration-300 relative overflow-hidden flex items-center justify-center">
-          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-400/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-          <span [ngClass]="skipActionIcon()"
-                [class.text-emerald-300]="currentMode() === 'focus'"
-                [class.text-amber-300]="currentMode() === 'break'"
-                class="relative z-10 text-lg leading-none"></span>
-          <div class="absolute -top-9 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-20">
-            {{ currentMode() === 'focus' ? 'Saltar al descanso' : 'Volver al trabajo' }}
-          </div>
+        <button type="button" (click)="requestSkipToBreak()" class="timer-btn timer-btn-secondary timer-btn-break" [attr.title]="currentMode() === 'focus' ? 'Descanso' : 'Volver al trabajo'">
+          <span [ngClass]="skipActionIcon()"></span>
+          <span class="timer-btn-text">{{ currentMode() === 'focus' ? 'Descanso' : 'Volver' }}</span>
         </button>
-        </div>
       </div>
     </div>
   </div>
 
-  <!-- Columna derecha: Tareas -->
-  <div class="flex flex-col lg:w-1/2 h-full">
-    <div class="bg-slate-900 rounded-lg p-4 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800/40 backdrop-blur border-2 border-cyan-500/10 shadow-2xl shadow-cyan-500/10 flex flex-col h-full overflow-hidden">
-      <app-task-list class="flex-1 h-full min-h-0" [sessionsCompleted]="sessionsCompleted()" />
+  <!-- Derecha: estadísticas + tareas -->
+  <div class="flex flex-col lg:w-1/2 h-auto lg:h-full min-h-0">
+    <div class="hydro-dashboard-shell flex flex-col h-full min-h-0">
+      <app-task-list
+        class="hydro-dashboard-content flex-1 h-full min-h-0"
+        (celebrationReached)="onCelebrationReached($event)"
+        (shareSummaryRequest)="onShareSummaryRequest($event)"
+      />
     </div>
   </div>
 </div>
 
+@if (celebrationStats()) {
+  <app-celebration-dialog
+    [visible]="celebrationVisible()"
+    [stats]="celebrationStats()!"
+    (visibleChange)="onCelebrationClose()"
+    (closeDayRequest)="requestCloseDay()"
+  />
+}
+
+@if (transitionTip()) {
+  <div class="transition-tip-card" role="status" aria-live="polite">
+    <button type="button" class="transition-tip-close" (click)="dismissTransitionTip()" aria-label="Cerrar tip">
+      <span class="pi pi-times"></span>
+    </button>
+    <p class="transition-tip-title">{{ transitionTip()!.title }}</p>
+    <p class="transition-tip-message">{{ transitionTip()!.message }}</p>
+  </div>
+}

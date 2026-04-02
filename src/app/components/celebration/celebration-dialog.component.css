@@ -1,0 +1,32 @@
+:host ::ng-deep .hydro-dialog.celebration-dialog .p-dialog-header {
+  background: transparent;
+  border: none;
+  padding: 0.35rem 0.35rem 0;
+}
+
+:host ::ng-deep .hydro-dialog.celebration-dialog .p-dialog-content {
+  padding: 0;
+  background: transparent;
+  overflow: auto !important;
+  max-height: 90vh;
+}
+
+:host ::ng-deep .hydro-dialog.celebration-dialog .p-dialog {
+  border-radius: 16px;
+  border: 1px solid rgba(95, 132, 178, 0.35);
+  background: linear-gradient(180deg, rgba(15, 22, 38, 0.98) 0%, rgba(13, 20, 34, 0.99) 100%);
+  box-shadow: 0 24px 48px rgba(2, 6, 23, 0.5);
+}
+
+:host ::ng-deep .hydro-dialog.celebration-dialog .p-dialog-header-icons .p-dialog-header-icon {
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  color: rgba(203, 213, 225, 0.9);
+  transition: all 180ms ease;
+}
+
+:host ::ng-deep .hydro-dialog.celebration-dialog .p-dialog-header-icons .p-dialog-header-icon:hover {
+  border-color: rgba(125, 211, 252, 0.58);
+  color: #e2e8f0;
+  background: rgba(15, 23, 42, 0.75);
+}

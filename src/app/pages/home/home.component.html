@@ -1,9 +1,9 @@
-<div class="h-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden">
+<div class="hydro-app-bg h-dvh text-slate-100 flex flex-col overflow-hidden">
   <app-header class="shrink-0" />
 
-  <main class="flex-1 overflow-hidden min-h-0">
-    <div class="max-w-6xl mx-auto px-6 h-full py-4">
-      <app-timer />
+  <main class="flex-1 min-h-0 overflow-y-auto">
+    <div class="max-w-6xl mx-auto w-full px-3 sm:px-5 lg:px-6 h-auto lg:h-full box-border py-2 sm:py-3 flex flex-col lg:min-h-0 gap-3 sm:gap-4">
+      <app-timer class="block lg:flex-1 lg:min-h-0" />
     </div>
   </main>
 </div>

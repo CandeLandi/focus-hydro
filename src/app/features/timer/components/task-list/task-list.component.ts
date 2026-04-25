@@ -8,11 +8,13 @@ import { QuickStatsComponent, StatCard } from '../../../../components/shared/qui
 import { CelebrationStats } from '../../../../shared/models/celebration.model';
 import { HydroFocusDailyService } from '../../../../core/services/hydrofocus-daily.service';
 import { HydroTask } from '../../../../shared/models/daily.model';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { LanguageService } from '../../../../core/i18n/language.service';
 
 @Component({
   selector: 'app-task-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, InputTextModule, CheckboxModule, ButtonModule, QuickStatsComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, InputTextModule, CheckboxModule, ButtonModule, QuickStatsComponent],
   templateUrl: './task-list.component.html',
   styleUrl: './task-list.component.css',
   host: { class: 'block h-full' }
@@ -20,6 +22,8 @@ import { HydroTask } from '../../../../shared/models/daily.model';
 export class TaskListComponent {
   private dailyService = inject(HydroFocusDailyService);
   private destroyRef = inject(DestroyRef);
+  private translate = inject(TranslateService);
+  private language = inject(LanguageService);
   tasks = this.dailyService.tasks;
   completedSessions = this.dailyService.completedSessions;
   totalFocusMinutes = this.dailyService.totalFocusMinutes;
@@ -34,7 +38,10 @@ export class TaskListComponent {
   private pendingDeleteClearTimer: ReturnType<typeof setTimeout> | null = null;
 
   completedCount = computed(() => this.tasks().filter(t => t.completed).length);
-  today = computed(() => new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }));
+  today = computed(() => {
+    const locale = this.language.currentLanguage() === 'en' ? 'en-US' : 'es-ES';
+    return new Date().toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' });
+  });
   completionPercentage = computed(() => {
     const total = this.tasks().length;
     return total > 0 ? Math.round((this.completedCount() / total) * 100) : 0;
@@ -47,11 +54,27 @@ export class TaskListComponent {
   pendingTasks = computed(() => this.tasks().filter(t => !t.completed));
   doneTasks = computed(() => this.tasks().filter(t => t.completed));
 
-  stats = computed<StatCard[]>(() => [
-    { value: this.completedSessions().toString(), label: 'sesiones', color: 'blue' },
-    { value: this.formatFocusTime(this.totalFocusMinutes()), label: 'min foco', color: 'green' },
-    { value: `${this.completionPercentage()}%`, label: 'tareas', color: 'cyan' }
-  ]);
+  stats = computed<StatCard[]>(() => {
+    this.language.currentLanguage();
+    this.language.translationTick();
+    return [
+      {
+        value: this.completedSessions().toString(),
+        label: this.translate.instant('stats.sessions'),
+        color: 'blue'
+      },
+      {
+        value: this.formatFocusTime(this.totalFocusMinutes()),
+        label: this.translate.instant('stats.focusMin'),
+        color: 'green'
+      },
+      {
+        value: `${this.completionPercentage()}%`,
+        label: this.translate.instant('stats.tasks'),
+        color: 'cyan'
+      }
+    ];
+  });
 
   constructor() {
     this.destroyRef.onDestroy(() => this.clearPendingDeleteTimer());
@@ -60,9 +83,11 @@ export class TaskListComponent {
       const allCompleted = this.allTasksCompleted();
       const totalTasks = this.tasks().length;
       const focusMin = this.totalFocusMinutes();
+      const summaryAlreadyGenerated = this.dailyService.summaryGenerated();
 
-      if (allCompleted && totalTasks > 0 && !this.hasTriggeredCelebration) {
+      if (allCompleted && totalTasks > 0 && !this.hasTriggeredCelebration && !summaryAlreadyGenerated) {
         this.hasTriggeredCelebration = true;
+        this.dailyService.setSummaryGenerated(true);
         this.celebrationReached.emit({
           tasksCompleted: totalTasks,
           totalFocusTime: this.formatFocusTime(focusMin),
@@ -71,6 +96,9 @@ export class TaskListComponent {
         });
       } else if (!allCompleted && totalTasks > 0) {
         this.hasTriggeredCelebration = false;
+        if (summaryAlreadyGenerated) {
+          this.dailyService.setSummaryGenerated(false);
+        }
       }
     });
 

@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 
 export interface StatCard {
   value: string | number;
@@ -11,7 +12,7 @@ export interface StatCard {
 @Component({
   selector: 'app-quick-stats',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './quick-stats.component.html',
   styleUrl: './quick-stats.component.css'
 })

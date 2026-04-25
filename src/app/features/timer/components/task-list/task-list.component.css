@@ -54,7 +54,7 @@
   border-color: #94a3b8;
 }
 
-/* Marcado: acento cyan suave (HydroFocus), check blanco */
+/* Marcado: acento cyan suave (Focus and Hydrate), check blanco */
 :host ::ng-deep .task-checkbox-wrap .p-checkbox.p-checkbox-checked .p-checkbox-box,
 :host ::ng-deep .task-checkbox-wrap .p-checkbox-checked .p-checkbox-box {
   background: #0ea5e9;

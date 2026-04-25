@@ -1,32 +1,153 @@
-:host ::ng-deep .hydro-dialog.celebration-dialog .p-dialog-header {
+.hydro-dialog.celebration-dialog .p-dialog-header {
   background: transparent;
   border: none;
   padding: 0.35rem 0.35rem 0;
 }
 
-:host ::ng-deep .hydro-dialog.celebration-dialog .p-dialog-content {
+.hydro-dialog.celebration-dialog .p-dialog-content {
   padding: 0;
   background: transparent;
   overflow: auto !important;
   max-height: 90vh;
 }
 
-:host ::ng-deep .hydro-dialog.celebration-dialog .p-dialog {
-  border-radius: 16px;
-  border: 1px solid rgba(95, 132, 178, 0.35);
-  background: linear-gradient(180deg, rgba(15, 22, 38, 0.98) 0%, rgba(13, 20, 34, 0.99) 100%);
-  box-shadow: 0 24px 48px rgba(2, 6, 23, 0.5);
+.p-dialog.hydro-dialog.celebration-dialog {
+  border-radius: 14px;
+  border: 1px solid rgba(96, 130, 176, 0.28) !important;
+  background: linear-gradient(180deg, rgba(8, 20, 40, 0.98) 0%, rgba(7, 17, 33, 1) 100%) !important;
+  box-shadow: 0 18px 42px rgba(2, 8, 22, 0.56);
 }
 
-:host ::ng-deep .hydro-dialog.celebration-dialog .p-dialog-header-icons .p-dialog-header-icon {
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.5);
-  color: rgba(203, 213, 225, 0.9);
+.hydro-dialog.celebration-dialog .p-dialog-header-icons .p-dialog-header-icon {
+  border-radius: 10px;
+  border: 1px solid rgba(118, 160, 215, 0.26);
+  color: rgba(204, 220, 244, 0.92);
+  background: rgba(8, 22, 45, 0.6);
   transition: all 180ms ease;
 }
 
-:host ::ng-deep .hydro-dialog.celebration-dialog .p-dialog-header-icons .p-dialog-header-icon:hover {
-  border-color: rgba(125, 211, 252, 0.58);
+.hydro-dialog.celebration-dialog .p-dialog-header-icons .p-dialog-header-icon:hover {
+  border-color: rgba(128, 206, 255, 0.46);
+  color: #eff6ff;
+  background: rgba(10, 29, 58, 0.78);
+  box-shadow: 0 0 0 1px rgba(125, 211, 252, 0.08) inset;
+}
+
+.celebration-shell {
+  padding: 0.95rem 1.15rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
   color: #e2e8f0;
-  background: rgba(15, 23, 42, 0.75);
+}
+
+.celebration-head {
+  text-align: center;
+}
+
+.celebration-head h2 {
+  margin: 0;
+  font-size: clamp(1.55rem, 2.8vw, 2rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+}
+
+.celebration-subtitle {
+  margin: 0.35rem 0 0;
+  font-size: 0.92rem;
+  color: rgba(188, 208, 236, 0.86);
+}
+
+.celebration-name {
+  margin: 0.3rem 0 0;
+  font-size: 0.92rem;
+  color: rgba(164, 201, 249, 0.95);
+}
+
+.celebration-success {
+  width: 68px;
+  height: 68px;
+  margin: 0 auto;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.celebration-stats-inline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  font-size: 0.9rem;
+  color: rgba(188, 208, 236, 0.9);
+}
+
+.celebration-stats-inline strong {
+  color: #f8fafc;
+  font-weight: 700;
+}
+
+.celebration-stats-inline .sep {
+  color: rgba(148, 177, 218, 0.55);
+}
+
+.celebration-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.celebration-cta.p-button {
+  min-height: 2.75rem !important;
+  min-width: 184px;
+  border-radius: 10px !important;
+  padding: 0.45rem 0.85rem !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+}
+
+.celebration-cta--primary.p-button {
+  border: 1px solid rgba(115, 190, 245, 0.46) !important;
+  background: linear-gradient(180deg, rgba(55, 130, 236, 0.95) 0%, rgba(39, 99, 198, 0.98) 100%) !important;
+  color: #eff6ff !important;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.2) !important;
+}
+
+.celebration-cta--primary.p-button:hover {
+  border-color: rgba(151, 214, 255, 0.62) !important;
+  background: linear-gradient(180deg, rgba(63, 141, 245, 0.96) 0%, rgba(45, 112, 214, 0.98) 100%) !important;
+}
+
+.celebration-cta--secondary.p-button {
+  border: 1px solid rgba(103, 137, 183, 0.44) !important;
+  background: rgba(9, 24, 46, 0.35) !important;
+  color: rgba(219, 234, 254, 0.95) !important;
+}
+
+.celebration-cta--secondary.p-button:hover {
+  border-color: rgba(134, 173, 226, 0.6) !important;
+  background: rgba(10, 28, 52, 0.55) !important;
+}
+
+.celebration-hint {
+  margin: 0.1rem 0 0;
+  text-align: center;
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: rgba(149, 173, 207, 0.84) !important;
+}
+
+@media (max-width: 575px) {
+  .celebration-shell {
+    padding: 0.8rem 0.9rem 0.95rem;
+    gap: 0.72rem;
+  }
+
+  .celebration-cta.p-button {
+    width: 100%;
+    min-width: 0;
+  }
 }

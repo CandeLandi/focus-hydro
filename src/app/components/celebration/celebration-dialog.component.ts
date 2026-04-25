@@ -1,16 +1,18 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { CelebrationStats } from '../../shared/models/celebration.model';
 import { ImageGeneratorService } from '../../core/services/image-generator.service';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-celebration-dialog',
   standalone: true,
-  imports: [CommonModule, DialogModule, ButtonModule],
+  imports: [CommonModule, DialogModule, ButtonModule, TranslateModule],
   templateUrl: './celebration-dialog.component.html',
-  styleUrl: './celebration-dialog.component.css'
+  styleUrl: './celebration-dialog.component.css',
+  encapsulation: ViewEncapsulation.None
 })
 export class CelebrationDialogComponent implements OnInit {
   @Input() visible: boolean = false;
@@ -25,7 +27,7 @@ export class CelebrationDialogComponent implements OnInit {
   ngOnInit(): void {
     // Validar que las estadísticas estén presentes
     if (!this.stats) {
-      console.error('[HydroFocus] No se proporcionaron estadísticas para el diálogo de celebración');
+      console.error('[Focus and Hydrate] No se proporcionaron estadísticas para el diálogo de celebración');
     }
   }
 
@@ -34,10 +36,10 @@ export class CelebrationDialogComponent implements OnInit {
     this.isGeneratingImage = true;
     try {
       const imageUrl = await this.imageGenerator.generateLinkedInImage(this.stats);
-      const filename = `hydrofocus-logro-${new Date().toISOString().split('T')[0]}.png`;
+      const filename = `focus-and-hydrate-logro-${new Date().toISOString().split('T')[0]}.png`;
       this.imageGenerator.downloadImage(imageUrl, filename);
     } catch (error) {
-      console.error('[HydroFocus] Error al generar la imagen:', error);
+      console.error('[Focus and Hydrate] Error al generar la imagen:', error);
     } finally {
       this.isGeneratingImage = false;
     }
@@ -48,13 +50,13 @@ export class CelebrationDialogComponent implements OnInit {
     this.isGeneratingImage = true;
     try {
       const imageUrl = await this.imageGenerator.generateLinkedInImage(this.stats);
-      const filename = `hydrofocus-logro-${new Date().toISOString().split('T')[0]}.png`;
+      const filename = `focus-and-hydrate-logro-${new Date().toISOString().split('T')[0]}.png`;
       this.imageGenerator.downloadImage(imageUrl, filename);
       const text = this.imageGenerator.getSuggestedPostText(this.stats);
       await navigator.clipboard.writeText(text);
       window.open('https://www.linkedin.com/feed/', '_blank', 'noopener,noreferrer');
     } catch (error) {
-      console.error('[HydroFocus] Error al compartir:', error);
+      console.error('[Focus and Hydrate] Error al compartir:', error);
     } finally {
       this.isGeneratingImage = false;
     }

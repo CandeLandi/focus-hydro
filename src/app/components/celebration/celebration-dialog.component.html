@@ -12,60 +12,50 @@
   baseZIndex="11003"
   (onHide)="onClose()"
 >
-  <div class="flex flex-col gap-4 px-5 pb-5 pt-3 text-slate-100 max-sm:px-4 max-sm:pb-4">
-    <div class="text-center">
-      <p class="m-0 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-slate-400">Objetivo del dia completado</p>
-      <h2 class="mb-1 mt-1 text-[2.1rem] font-bold leading-[1.1] tracking-[-0.02em] text-slate-50 max-sm:text-[1.7rem]">Gran progreso hoy</h2>
-      <p class="m-0 text-[0.9rem] font-medium leading-[1.35] text-slate-400 max-sm:text-[0.82rem]">
-        Tu resumen esta listo para compartir{{ stats.displayName ? ' · ' + stats.displayName : '' }}
-      </p>
+  <div class="celebration-shell">
+    <div class="celebration-head">
+      <h2>{{ 'celebration.greatProgress' | translate }}</h2>
+      <p class="celebration-subtitle">{{ 'celebration.summaryReady' | translate }}</p>
+      @if (stats.displayName) {
+        <p class="celebration-name">{{ stats.displayName }}</p>
+      }
     </div>
 
-    <div class="mx-auto my-[0.1rem] inline-flex h-[7.8rem] w-[7.8rem] items-center justify-center overflow-hidden rounded-full bg-[radial-gradient(circle_at_50%_50%,rgba(56,189,248,0.08)_0%,transparent_70%)] max-sm:h-[6.9rem] max-sm:w-[6.9rem]" aria-hidden="true">
+    <div class="celebration-success" aria-hidden="true">
       <img
         src="/images/success.png"
         alt=""
-        class="block h-full w-full scale-[1.45] object-cover object-center"
+        class="block h-full w-full object-cover object-center"
       />
     </div>
 
-    <div class="grid grid-cols-1 min-[460px]:grid-cols-3 gap-2.5" role="group" aria-label="Resumen del día">
-      <div class="flex min-h-[118px] flex-col items-center justify-center gap-1 rounded-xl border border-[rgba(69,130,210,0.42)] bg-[linear-gradient(180deg,rgba(8,21,44,0.86)_0%,rgba(7,16,32,0.95)_100%)] px-[0.55rem] py-[0.78rem] shadow-[inset_0_1px_0_rgba(191,219,254,0.08)] transition-all duration-200 hover:-translate-y-px hover:border-[rgba(125,211,252,0.58)]">
-        <span class="pi pi-check-circle mb-px text-[0.9rem] text-[rgba(147,197,253,0.86)]"></span>
-        <span class="text-[1.85rem] min-[460px]:text-[2.15rem] font-bold leading-none tracking-[-0.03em] text-slate-50">{{ stats.tasksCompleted || 0 }}</span>
-        <span class="text-center text-[0.73rem] font-semibold leading-[1.25] text-[rgba(191,215,245,0.8)] max-sm:text-[0.69rem]">Tareas completadas</span>
-      </div>
-      <div class="flex min-h-[118px] flex-col items-center justify-center gap-1 rounded-xl border border-[rgba(69,130,210,0.42)] bg-[linear-gradient(180deg,rgba(8,21,44,0.86)_0%,rgba(7,16,32,0.95)_100%)] px-[0.55rem] py-[0.78rem] shadow-[inset_0_1px_0_rgba(191,219,254,0.08)] transition-all duration-200 hover:-translate-y-px hover:border-[rgba(125,211,252,0.58)]">
-        <span class="pi pi-clock mb-px text-[0.9rem] text-[rgba(147,197,253,0.86)]"></span>
-        <span class="text-[1.85rem] min-[460px]:text-[2.15rem] font-bold leading-none tracking-[-0.03em] text-slate-50">{{ stats.totalFocusTime || '0h 0m' }}</span>
-        <span class="text-center text-[0.73rem] font-semibold leading-[1.25] text-[rgba(191,215,245,0.8)] max-sm:text-[0.69rem]">Tiempo de foco</span>
-      </div>
-      <div class="flex min-h-[118px] flex-col items-center justify-center gap-1 rounded-xl border border-[rgba(56,189,248,0.62)] bg-[linear-gradient(180deg,rgba(11,31,60,0.9)_0%,rgba(7,22,43,0.98)_100%)] px-[0.55rem] py-[0.78rem] shadow-[inset_0_1px_0_rgba(191,219,254,0.08)] transition-all duration-200 hover:-translate-y-px hover:border-[rgba(125,211,252,0.58)]">
-        <span class="pi pi-chart-line mb-px text-[0.9rem] text-[rgba(147,197,253,0.86)]"></span>
-        <span class="text-[1.85rem] min-[460px]:text-[2.15rem] font-bold leading-none tracking-[-0.03em] text-slate-50">{{ stats.completionPercentage }}%</span>
-        <span class="text-center text-[0.73rem] font-semibold leading-[1.25] text-[rgba(191,215,245,0.8)] max-sm:text-[0.69rem]">Progreso del dia</span>
-      </div>
+    <div class="celebration-stats-inline" role="group" aria-label="Summary stats">
+      <span><strong>{{ stats.tasksCompleted || 0 }}</strong> {{ 'celebration.tasksCompleted' | translate }}</span>
+      <span class="sep">·</span>
+      <span><strong>{{ stats.totalFocusTime || '0h 0m' }}</strong> {{ 'celebration.focusTime' | translate }}</span>
+      <span class="sep">·</span>
+      <span><strong>{{ stats.completionPercentage }}%</strong></span>
     </div>
 
-    <div class="flex flex-wrap items-center justify-center gap-[0.65rem] max-sm:w-full">
+    <div class="celebration-actions">
       <p-button
-        label="Compartir en LinkedIn"
+        [label]="'celebration.shareLinkedIn' | translate"
         icon="pi pi-linkedin"
         [loading]="isGeneratingImage"
-        styleClass="!min-h-12 !min-w-[190px] !rounded-[10px] !px-[0.8rem] !py-[0.5rem] !text-[0.88rem] !font-semibold !text-[#eff6ff] !border !border-[rgba(96,165,250,0.72)] !bg-[linear-gradient(180deg,#2f7bf6_0%,#1d5fd6_100%)] !shadow-[0_10px_22px_rgba(37,99,235,0.35)] hover:!border-[rgba(147,197,253,0.9)] hover:!bg-[linear-gradient(180deg,#3a86ff_0%,#226cdd_100%)] max-sm:!min-w-0 max-sm:!w-full"
+        styleClass="celebration-cta celebration-cta--primary"
         (onClick)="onShareLinkedIn()"
       />
       <p-button
-        label="Descargar imagen"
+        [label]="'celebration.downloadImage' | translate"
         icon="pi pi-download"
         [loading]="isGeneratingImage"
-        styleClass="!min-h-12 !min-w-[190px] !rounded-[10px] !px-[0.8rem] !py-[0.5rem] !text-[0.88rem] !font-semibold !text-[#dbeafe] !border !border-[rgba(100,116,139,0.72)] !bg-[rgba(15,23,42,0.45)] !shadow-none hover:!border-[rgba(148,163,184,0.92)] hover:!bg-[rgba(15,23,42,0.65)] max-sm:!min-w-0 max-sm:!w-full"
+        styleClass="celebration-cta celebration-cta--secondary"
         (onClick)="onDownloadImage()"
       />
     </div>
 
-    <p class="-mt-0.5 mb-0 text-center text-[0.72rem] leading-[1.4] text-[#7d91b3]">
-      Al compartir, se descarga la imagen y se copia un texto sugerido para tu publicacion.
+    <p class="celebration-hint">
+      {{ 'celebration.shareHint' | translate }}
     </p>
 
   </div>

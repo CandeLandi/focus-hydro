@@ -25,7 +25,7 @@ export class ImageGeneratorService {
     return canvas.toDataURL('image/png');
   }
 
-  downloadImage(dataUrl: string, filename: string = 'hydrofocus-logro.png'): void {
+  downloadImage(dataUrl: string, filename: string = 'focus-and-hydrate-logro.png'): void {
     const link = document.createElement('a');
     link.download = filename;
     link.href = dataUrl;
@@ -33,14 +33,14 @@ export class ImageGeneratorService {
   }
 
   getSuggestedPostText(stats: CelebrationStats): string {
-    const authorLine = stats.displayName ? `Soy ${stats.displayName} y hoy cerré mi objetivo diario en HydroFocus.\n\n` : '';
+    const authorLine = stats.displayName ? `Soy ${stats.displayName} y hoy cerré mi objetivo diario en Focus and Hydrate.\n\n` : '';
     return (
       `¡Objetivo del día cumplido! 🎯\n\n` +
       authorLine +
       `✅ ${stats.tasksCompleted} tareas completadas\n` +
       `⏱️ ${stats.totalFocusTime} de enfoque con la Técnica Pomodoro\n` +
       `💧 Enfoque + hidratación = productividad sostenible\n\n` +
-      `#Productividad #Pomodoro #Enfoque #HydroFocus`
+      `#Productividad #Pomodoro #Enfoque #FocusAndHydrate`
     );
   }
 
@@ -63,7 +63,7 @@ export class ImageGeneratorService {
   }
 
   private async drawHeroGraphic(ctx: CanvasRenderingContext2D, width: number): Promise<void> {
-    const hero = await this.loadImage('/images/winners.svg');
+    const hero = await this.loadImage('/images/winners.png');
     const maxW = 360;
     const scale = Math.min(maxW / hero.width, 1);
     const drawW = hero.width * scale;
@@ -176,14 +176,14 @@ export class ImageGeneratorService {
       ctx.drawImage(logo, logoX, logoY, logoSize, logoSize);
       ctx.restore();
     } catch (error) {
-      console.error('[HydroFocus] No se pudo cargar el logo para branding', error);
+      console.error('[Focus and Hydrate] No se pudo cargar el logo para branding', error);
     }
 
     ctx.fillStyle = '#ffffff';
     ctx.font = '600 31px Inter, system-ui, -apple-system, sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
-    ctx.fillText('HydroFocus', logoX + 82, logoY + 32);
+    ctx.fillText('Focus and Hydrate', logoX + 82, logoY + 32);
 
     ctx.fillStyle = '#7f95b8';
     ctx.font = '400 17px Inter, system-ui, -apple-system, sans-serif';
@@ -192,7 +192,7 @@ export class ImageGeneratorService {
     ctx.fillStyle = '#64748b';
     ctx.font = '400 17px Inter, system-ui, -apple-system, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('hydrofocus.app', width / 2, height - 40);
+    ctx.fillText('focusandhydrate.com', width / 2, height - 40);
   }
 
   private roundRect(

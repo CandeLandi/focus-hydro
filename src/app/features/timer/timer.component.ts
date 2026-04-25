@@ -12,6 +12,8 @@ import { NotificationService } from '../../core/services/notification.service';
 import { HydroFocusDailyService } from '../../core/services/hydrofocus-daily.service';
 import { BrowserTabProgressService } from '../../core/services/browser-tab-progress.service';
 import { TimerPersistedState } from '../../shared/models/timer-state.model';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { LanguageService } from '../../core/i18n/language.service';
 
 export interface TimerConfig {
   focusDuration: number;
@@ -38,7 +40,7 @@ interface ShareProfileState {
 @Component({
   selector: 'app-timer',
   standalone: true,
-  imports: [CommonModule, FormsModule, WaterBottleComponent, TaskListComponent, DialogModule, ButtonModule, InputNumberModule, CelebrationDialogComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, WaterBottleComponent, TaskListComponent, DialogModule, ButtonModule, InputNumberModule, CelebrationDialogComponent],
   templateUrl: './timer.component.html',
   styleUrls: ['./timer.component.css']
 })
@@ -67,10 +69,14 @@ export class TimerComponent implements OnDestroy, OnInit {
   private intervalId: number | null = null;
   private didInitSessionWatcher = false;
   private previousCompletedSessions = 0;
+  private wasRunningOnLastTick = false;
+  private lastOneMinuteAlertSignature: string | null = null;
 
   private notificationService = inject(NotificationService);
   private dailyService = inject(HydroFocusDailyService);
   private browserTabProgress = inject(BrowserTabProgressService);
+  private translate = inject(TranslateService);
+  private language = inject(LanguageService);
   sessionsCompleted = computed(() => this.dailyService.completedSessions());
   totalFocusTimeMinutes = computed(() => this.dailyService.totalFocusMinutes());
   transitionTip = this.notificationService.transitionTip;
@@ -102,25 +108,21 @@ export class TimerComponent implements OnDestroy, OnInit {
   skipActionIcon = computed(() => this.currentMode() === 'focus' ? 'pi pi-moon' : 'pi pi-bolt');
 
   mainButtonLabel = computed(() => {
-    if (this.isRunning()) return 'Pausar';
+    this.language.currentLanguage();
+    this.language.translationTick();
     const remaining = this.timeRemaining();
     const total = this.currentSegmentTotalSeconds();
-    return remaining < total && remaining > 0 ? 'Reanudar' : 'Iniciar';
+    if (this.isRunning()) return this.t('timer.pause');
+    return remaining < total && remaining > 0 ? this.t('timer.resume') : this.t('timer.start');
   });
 
-  timerMicrocopy = computed(() => this.isBreak() ? this.breakMessage() : 'Una cosa a la vez.');
+  timerMicrocopy = computed(() => this.isBreak() ? this.breakMessage() : this.t('timer.oneThing'));
 
   breakMessage = computed(() => {
-    const messages = [
-      'Tomar agua es esencial para nuestra mente',
-      'Hidratarte ayuda a pensar con más claridad',
-      'Tu cuerpo te agradece un descanso',
-      'Aléjate un momento de la pantalla',
-      'Estirá un poco: el descanso también es productividad',
-      'Buen momento para recargar tu botella',
-      'Cinco minutos para volver con más energía',
-      'Mirá un punto lejano: descansar la vista también cuenta',
-    ];
+    this.language.currentLanguage();
+    this.language.translationTick();
+    const value = this.translate.instant('timer.breakMessages');
+    const messages = Array.isArray(value) ? value as string[] : [this.t('timer.oneThing')];
     const idx = Math.abs(this.sessionsCompleted() + (this.isLongBreak() ? 1 : 0)) % messages.length;
     return messages[idx];
   });
@@ -148,15 +150,42 @@ export class TimerComponent implements OnDestroy, OnInit {
     });
 
     effect(() => {
-      if (!this.isRunning()) {
-        this.browserTabProgress.restoreDefaults();
-        return;
-      }
+      this.language.translationTick();
+      const running = this.isRunning();
+      const mode = this.currentMode();
+      const remaining = this.timeRemaining();
+      const total = this.currentSegmentTotalSeconds();
+      const dailySessions = this.sessionsCompleted();
+      const isIdle = !running && remaining === total;
+
       this.browserTabProgress.update({
-        mode: this.currentMode(),
-        remainingSeconds: this.timeRemaining(),
-        totalSeconds: this.currentSegmentTotalSeconds()
+        mode: isIdle ? 'idle' : running ? mode : 'paused',
+        remainingSeconds: remaining,
+        totalSeconds: total,
+        dailySessions,
+        isRunning: running
       });
+
+      if (!running && this.wasRunningOnLastTick && !isIdle) {
+        this.browserTabProgress.showTemporaryTitle(
+          `⏸ ${this.translate.instant('browserTab.paused')} • ${this.formatTime(remaining)}`,
+          2500
+        );
+      }
+
+      if (running && mode === 'focus' && remaining <= 60 && remaining > 0) {
+        const signature = `${dailySessions}|${total}`;
+        if (this.lastOneMinuteAlertSignature !== signature) {
+          this.lastOneMinuteAlertSignature = signature;
+          this.browserTabProgress.showTemporaryTitle(this.translate.instant('browserTab.lastMinuteFocus'), 3000);
+        }
+      }
+
+      if (running && remaining > 60) {
+        this.lastOneMinuteAlertSignature = null;
+      }
+
+      this.wasRunningOnLastTick = running;
     });
 
     effect(() => {
@@ -290,6 +319,17 @@ export class TimerComponent implements OnDestroy, OnInit {
     return { ...stats, displayName: name } as CelebrationStats;
   }
 
+  /** Con 0 sesiones completadas hoy, no dejar el temporizador en descanso (restos de localStorage / otro día). */
+  private ensureFirstDailySessionNotStuckInBreak(): void {
+    if (this.dailyService.completedSessions() !== 0) return;
+    if (this.currentMode() !== 'break') return;
+    const config = this.timerConfig();
+    this.currentMode.set('focus');
+    this.timeRemaining.set(config.focusDuration * 60);
+    this.startedAt.set(null);
+    this.isRunning.set(false);
+  }
+
   private loadTimerState(): void {
     this.dailyService.loadAndMaybeResetDay();
 
@@ -321,18 +361,27 @@ export class TimerComponent implements OnDestroy, OnInit {
       if (state.isRunning && state.startedAt != null) {
         const elapsed = Math.floor((Date.now() - state.startedAt) / 1000);
         const remaining = Math.max(0, effectiveTotal - elapsed);
-        this.timeRemaining.set(remaining);
-        this.startedAt.set(remaining > 0 ? state.startedAt : null);
-        this.isRunning.set(remaining > 0);
-        if (remaining === 0) {
-          this.runTimerCompleteLogic();
+        if (remaining > 0) {
+          this.timeRemaining.set(remaining);
+          this.startedAt.set(state.startedAt);
+          this.isRunning.set(true);
+        } else {
+          // El segmento ya venció en segundo plano: no contabilizar métricas al recargar
+          // (evita avanzar sesión / sumar minutos en cada F5). Queda pausado en 00:00.
+          this.timeRemaining.set(0);
+          this.startedAt.set(null);
+          this.isRunning.set(false);
         }
       } else {
-        const saved = wasShortConfig ? effectiveTotal : Math.min(Math.max(0, state.remainingSeconds ?? effectiveTotal), effectiveTotal) || effectiveTotal;
+        const rawRem = state.remainingSeconds ?? effectiveTotal;
+        const clamped = Math.min(Math.max(0, rawRem), effectiveTotal);
+        const saved = wasShortConfig ? effectiveTotal : clamped;
         this.timeRemaining.set(saved);
         this.startedAt.set(null);
         this.isRunning.set(false);
       }
+
+      this.ensureFirstDailySessionNotStuckInBreak();
     } catch (e) {
       console.error('Error loading timer state', e);
       this.currentMode.set('focus');
@@ -351,12 +400,20 @@ export class TimerComponent implements OnDestroy, OnInit {
     if (this.currentMode() === 'focus') {
       this.dailyService.addFocusMinutes(config.focusDuration);
       this.dailyService.incrementCompletedSession();
-      this.notificationService.notifyFocusSessionCompleted();
       const completed = this.dailyService.completedSessions();
+      this.browserTabProgress.showTemporaryTitle(
+        this.translate.instant('browserTab.goodBlock', { count: completed }),
+        3600
+      );
+      this.notificationService.notifyFocusSessionCompleted();
       const isLong = completed > 0 && completed % config.sessionsUntilLongBreak === 0;
       this.currentMode.set('break');
       this.timeRemaining.set((isLong ? config.longBreakDuration : config.breakDuration) * 60);
     } else {
+      this.browserTabProgress.showTemporaryTitle(
+        this.translate.instant('browserTab.backToFocus', { count: this.sessionsCompleted() }),
+        3200
+      );
       this.notificationService.notifyBreakCompleted();
       this.currentMode.set('focus');
       this.timeRemaining.set(config.focusDuration * 60);
@@ -373,7 +430,7 @@ export class TimerComponent implements OnDestroy, OnInit {
 
   ngOnDestroy(): void {
     this.stopInterval();
-    this.browserTabProgress.restoreDefaults();
+    this.browserTabProgress.reset();
   }
 
   private startInterval(): void {
@@ -475,6 +532,12 @@ export class TimerComponent implements OnDestroy, OnInit {
   private doSkipToBreak(): void {
     this.isRunning.set(false);
     this.startedAt.set(null);
+    if (this.dailyService.completedSessions() === 0) {
+      const config = this.timerConfig();
+      this.currentMode.set('focus');
+      this.timeRemaining.set(config.focusDuration * 60);
+      return;
+    }
     this.currentMode.set('break');
     this.timeRemaining.set(this.timerConfig().breakDuration * 60);
   }
@@ -581,14 +644,14 @@ export class TimerComponent implements OnDestroy, OnInit {
 
   savePomodoroSettings(): void {
     if (this.isRunning()) {
-      this.settingsError.set('Pausá el temporizador para guardar cambios.');
+      this.settingsError.set(this.t('timer.settingsErrorPaused'));
       return;
     }
 
     const focus = this.safeMinutes(this.settingsFocusMinutes(), DEFAULT_TIMER_CONFIG.focusDuration, 1, 180);
     const rest = this.safeMinutes(this.settingsBreakMinutes(), DEFAULT_TIMER_CONFIG.breakDuration, 1, 60);
     if (focus !== this.settingsFocusMinutes() || rest !== this.settingsBreakMinutes()) {
-      this.settingsError.set('Ingresá minutos válidos: foco 1-180 y descanso 1-60.');
+      this.settingsError.set(this.t('timer.settingsErrorInvalid'));
       return;
     }
 
@@ -608,14 +671,24 @@ export class TimerComponent implements OnDestroy, OnInit {
     this.shareNameInput.set(rawValue);
   }
 
+  editShareName(): void {
+    this.openShareNamePrompt('share');
+  }
+
+  closeShareNamePrompt(): void {
+    this.shareNamePromptVisible.set(false);
+    this.shareNameError.set(null);
+    this.pendingShareStats.set(null);
+  }
+
   saveNameAndContinue(): void {
     const normalized = this.normalizeDisplayName(this.shareNameInput());
     if (!normalized) {
-      this.shareNameError.set('Ingresá tu nombre para continuar.');
+      this.shareNameError.set(this.t('share.nameErrorRequired'));
       return;
     }
     if (normalized.length < 2) {
-      this.shareNameError.set('Usá al menos 2 caracteres.');
+      this.shareNameError.set(this.t('share.nameErrorMin'));
       return;
     }
     this.shareDisplayName.set(normalized);
@@ -650,5 +723,11 @@ export class TimerComponent implements OnDestroy, OnInit {
 
   dismissTransitionTip(): void {
     this.notificationService.dismissTransitionTip();
+  }
+
+  private t(key: string, params?: Record<string, unknown>): string {
+    this.language.currentLanguage();
+    this.language.translationTick();
+    return this.translate.instant(key, params);
   }
 }

@@ -1,0 +1,142 @@
+{
+  "header": {
+    "tagline": "Pomodoro + mindful hydration",
+    "session": "Session {{value}}",
+    "todayFocus": "Today's focus {{value}}"
+  },
+  "lang": {
+    "es": "ES",
+    "en": "EN",
+    "switchTo": "Switch language to {{lang}}"
+  },
+  "timer": {
+    "focus": "FOCUS",
+    "break": "HYDRATION",
+    "longBreak": "LONG BREAK",
+    "start": "Start",
+    "pause": "Pause",
+    "resume": "Resume",
+    "reset": "Reset",
+    "rest": "Break",
+    "back": "Back",
+    "oneThing": "One thing at a time.",
+    "sessionLabel": "Session {{value}}",
+    "nextLongBreak": "next: long break",
+    "pomodoroChip": "Pomodoro {{focus}}/{{break}}",
+    "adjust": "Adjust",
+    "skipConfirm": "If you switch to break now, this block will not count toward completed sessions or today's focus time.",
+    "skipBack": "Back",
+    "skipConfirmCta": "Yes, go to break",
+    "introFocusTitle": "One focus block can change your day",
+    "introFocusSubtitle": "{{minutes}} minutes, one thing at a time",
+    "introFocusText": "Focus for a while, then rest. Pick one task and start when you're ready.",
+    "introBreakTitle": "Short break",
+    "introBreakSubtitle": "Hydration and recovery",
+    "introBreakText": "Stretch a little and drink water. {{minutes}} minutes to come back stronger.",
+    "introContinue": "Continue",
+    "settingsTitle": "Customize your Pomodoro",
+    "settingsSubtitle": "Choose how long your focus and break sessions are.",
+    "settingsFocus": "Focus session",
+    "settingsBreak": "Short break",
+    "minutes": "minutes",
+    "longBreakEach": "Long break every {{value}} sessions.",
+    "presetClassic": "25/5 Classic",
+    "presetDeep": "50/10 Deep",
+    "presetExtended": "90/15 Extended",
+    "closeDayTitle": "Close day",
+    "closeDaySubtitle": "Reset tasks and sessions for tomorrow",
+    "closeDayText": "Close and reset the day? Tasks and sessions will be cleared.",
+    "closeDayCancel": "Keep going",
+    "closeDayConfirm": "Close day",
+    "settingsErrorPaused": "Pause the timer to save changes.",
+    "settingsErrorInvalid": "Enter valid minutes: focus 1-180 and break 1-60.",
+    "breakMessages": [
+      "Drinking water is essential for your mind",
+      "Hydration helps you think more clearly",
+      "Your body thanks you for taking a break",
+      "Step away from the screen for a moment",
+      "Stretch a little: rest is productivity too",
+      "Good moment to refill your bottle",
+      "Five minutes to come back with more energy",
+      "Look at a far point: eye rest matters too"
+    ]
+  },
+  "tasks": {
+    "title": "Today's tasks",
+    "inputPlaceholder": "What do you want to focus on now?",
+    "pending": "Pending",
+    "done": "Completed",
+    "delete": "Delete",
+    "progressHint": "You can share your daily progress once all tasks are completed.",
+    "greatProgress": "Great progress today",
+    "shareSummary": "Share summary",
+    "emptyTitle": "Write what you want to solve today",
+    "emptySubtitle": "One task is enough to get started"
+  },
+  "stats": {
+    "title": "Today's progress",
+    "sessions": "sessions",
+    "focusMin": "focus min",
+    "tasks": "tasks"
+  },
+  "share": {
+    "namePromptTitle": "Would you like to add your name before sharing your progress?",
+    "nameDialogTitle": "Name",
+    "nameLabel": "Name",
+    "namePlaceholder": "Ex: Alex",
+    "savedNameLabel": "Name",
+    "editName": "Edit name",
+    "editNameAria": "Edit your sharing name",
+    "saveName": "Save",
+    "continueWithoutName": "Continue without name",
+    "saveAndShare": "Save and share",
+    "nameErrorRequired": "Enter your name to continue.",
+    "nameErrorMin": "Use at least 2 characters."
+  },
+  "celebration": {
+    "dayGoal": "Daily goal completed",
+    "greatProgress": "Great progress today",
+    "summaryReady": "Your summary is ready to share",
+    "tasksCompleted": "Tasks completed",
+    "focusTime": "Focus time",
+    "dayProgress": "Daily progress",
+    "shareLinkedIn": "Share on LinkedIn",
+    "downloadImage": "Download image",
+    "shareHint": "When sharing, the image is downloaded and a suggested post text is copied."
+  },
+  "notifications": {
+    "focusTitle": "Focus block completed",
+    "focusMessage": "Recover your energy: hydrate and take a short break",
+    "breakTitle": "Break finished",
+    "breakMessage": "Back to focus when you're ready.",
+    "tipFocusDone": "Focus time completed",
+    "tipBackToFocus": "Back to focus",
+    "focusToBreakTips": [
+      "Remember the 20-20-20 rule: every 20 minutes, look 20 meters away for 20 seconds.",
+      "This break is part of your progress: do not fill it with more screen time.",
+      "Drink some water: staying hydrated also helps sustain concentration.",
+      "Relax your shoulders and straighten your back: small adjustments prevent tension build-up."
+    ],
+    "breakToFocusTips": [
+      "Consistency wins when motivation drops.",
+      "Today counts too, even if it is small.",
+      "Being here is already part of progress.",
+      "What matters is not breaking the rhythm.",
+      "Showing up today is what makes the difference."
+    ]
+  },
+  "browserTab": {
+    "focus": "Focus",
+    "break": "Break",
+    "paused": "Paused",
+    "goodBlock": "Good block • Time to rest • 🔥 {{count}}",
+    "backToFocus": "Back to focus • 🔥 {{count}}",
+    "lastMinuteFocus": "Last minute • Focus"
+  },
+  "common": {
+    "close": "Close",
+    "save": "Save changes",
+    "switchLanguage": "Switch language"
+  }
+}
+

@@ -1,0 +1,142 @@
+{
+  "header": {
+    "tagline": "Pomodoro + hidratación consciente",
+    "session": "Sesión {{value}}",
+    "todayFocus": "Hoy llevás {{value}}"
+  },
+  "lang": {
+    "es": "ES",
+    "en": "EN",
+    "switchTo": "Cambiar idioma a {{lang}}"
+  },
+  "timer": {
+    "focus": "CONCENTRACIÓN",
+    "break": "HIDRATACIÓN",
+    "longBreak": "DESCANSO LARGO",
+    "start": "Iniciar",
+    "pause": "Pausar",
+    "resume": "Reanudar",
+    "reset": "Reiniciar",
+    "rest": "Descanso",
+    "back": "Volver",
+    "oneThing": "Una cosa a la vez.",
+    "sessionLabel": "Sesión {{value}}",
+    "nextLongBreak": "próximo: descanso largo",
+    "pomodoroChip": "Pomodoro {{focus}}/{{break}}",
+    "adjust": "Ajustar",
+    "skipConfirm": "Si pasás al descanso ahora, este bloque no sumará a las sesiones completadas ni al tiempo de enfoque del día.",
+    "skipBack": "Volver",
+    "skipConfirmCta": "Sí, ir al descanso",
+    "introFocusTitle": "Un bloque de foco cambia el día",
+    "introFocusSubtitle": "{{minutes}} minutos, una cosa a la vez",
+    "introFocusText": "Enfocate un rato, después descansás. Elegí una tarea y arrancá cuando estés listo.",
+    "introBreakTitle": "Pausa breve",
+    "introBreakSubtitle": "Hidratación y recuperación",
+    "introBreakText": "Estirá un poco y tomá agua. {{minutes}} minutos para volver mejor.",
+    "introContinue": "Continuar",
+    "settingsTitle": "Personalizá tu Pomodoro",
+    "settingsSubtitle": "Elegí cuánto duran tus sesiones de enfoque y descanso.",
+    "settingsFocus": "Sesión de enfoque",
+    "settingsBreak": "Descanso corto",
+    "minutes": "minutos",
+    "longBreakEach": "Descanso largo cada {{value}} sesiones.",
+    "presetClassic": "25/5 Clásico",
+    "presetDeep": "50/10 Profundo",
+    "presetExtended": "90/15 Extendido",
+    "closeDayTitle": "Cerrar el día",
+    "closeDaySubtitle": "Reiniciá tareas y sesiones para mañana",
+    "closeDayText": "¿Cerramos el día y reiniciamos? Se limpiarán tareas y sesiones.",
+    "closeDayCancel": "Seguir viendo",
+    "closeDayConfirm": "Cerrar día",
+    "settingsErrorPaused": "Pausá el temporizador para guardar cambios.",
+    "settingsErrorInvalid": "Ingresá minutos válidos: foco 1-180 y descanso 1-60.",
+    "breakMessages": [
+      "Tomar agua es esencial para nuestra mente",
+      "Hidratarte ayuda a pensar con más claridad",
+      "Tu cuerpo te agradece un descanso",
+      "Aléjate un momento de la pantalla",
+      "Estirá un poco: el descanso también es productividad",
+      "Buen momento para recargar tu botella",
+      "Cinco minutos para volver con más energía",
+      "Mirá un punto lejano: descansar la vista también cuenta"
+    ]
+  },
+  "tasks": {
+    "title": "Tareas del día",
+    "inputPlaceholder": "¿En qué querés enfocarte ahora?",
+    "pending": "Pendientes",
+    "done": "Completadas",
+    "delete": "Eliminar",
+    "progressHint": "Podes compartir tu progreso del dia una vez que completes tus tareas.",
+    "greatProgress": "Hoy hiciste un gran progreso",
+    "shareSummary": "Compartir resumen",
+    "emptyTitle": "Anotá lo que querés resolver hoy",
+    "emptySubtitle": "Con una sola tarea ya alcanza para empezar"
+  },
+  "stats": {
+    "title": "Progreso de hoy",
+    "sessions": "sesiones",
+    "focusMin": "min foco",
+    "tasks": "tareas"
+  },
+  "share": {
+    "namePromptTitle": "¿Querés poner tu nombre para compartir tu progreso?",
+    "nameDialogTitle": "Nombre",
+    "nameLabel": "Nombre",
+    "namePlaceholder": "Ej: Landi",
+    "savedNameLabel": "Nombre",
+    "editName": "Editar nombre",
+    "editNameAria": "Editar nombre para compartir",
+    "saveName": "Guardar",
+    "continueWithoutName": "Seguir sin nombre",
+    "saveAndShare": "Guardar y compartir",
+    "nameErrorRequired": "Ingresá tu nombre para continuar.",
+    "nameErrorMin": "Usá al menos 2 caracteres."
+  },
+  "celebration": {
+    "dayGoal": "Objetivo del dia completado",
+    "greatProgress": "Gran progreso hoy",
+    "summaryReady": "Tu resumen esta listo para compartir",
+    "tasksCompleted": "Tareas completadas",
+    "focusTime": "Tiempo de foco",
+    "dayProgress": "Progreso del dia",
+    "shareLinkedIn": "Compartir en LinkedIn",
+    "downloadImage": "Descargar imagen",
+    "shareHint": "Al compartir, se descarga la imagen y se copia un texto sugerido para tu publicacion."
+  },
+  "notifications": {
+    "focusTitle": "Bloque de foco completo",
+    "focusMessage": "Recuperá energía: hidratate y descansá unos minutos",
+    "breakTitle": "Descanso terminado",
+    "breakMessage": "Volvé a enfocarte cuando estés listo.",
+    "tipFocusDone": "Tiempo de enfoque completado",
+    "tipBackToFocus": "Volvemos al enfoque",
+    "focusToBreakTips": [
+      "Recordá la regla 20-20-20: Cada 20 minutos, mirá a 20 metros durante 20 segundos.",
+      "Este descanso también es parte del progreso: no llenes la pausa con más pantalla.",
+      "Tomá un poco de agua: mantenerte hidratado también ayuda a sostener la concentración.",
+      "Relajá los hombros y enderezá la espalda: pequeños ajustes evitan tensión acumulada."
+    ],
+    "breakToFocusTips": [
+      "La constancia gana cuando la motivación baja.",
+      "Hoy también suma, aunque sea poco.",
+      "Estar acá ya es parte del progreso.",
+      "Lo importante es no cortar el ritmo.",
+      "Seguir hoy es lo que hace la diferencia."
+    ]
+  },
+  "browserTab": {
+    "focus": "Foco",
+    "break": "Descanso",
+    "paused": "Pausado",
+    "goodBlock": "Buen bloque • Hora de descansar • 🔥 {{count}}",
+    "backToFocus": "Volvemos al foco • 🔥 {{count}}",
+    "lastMinuteFocus": "Último minuto • Foco"
+  },
+  "common": {
+    "close": "Cerrar",
+    "save": "Guardar cambios",
+    "switchLanguage": "Cambiar idioma"
+  }
+}
+

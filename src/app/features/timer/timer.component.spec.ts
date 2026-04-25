@@ -5,6 +5,9 @@ import { HydroFocusDailyService } from '../../core/services/hydrofocus-daily.ser
 import { NotificationService } from '../../core/services/notification.service';
 import { BrowserTabProgressService } from '../../core/services/browser-tab-progress.service';
 import { HydroTask } from '../../shared/models/daily.model';
+import { TimerPersistedState } from '../../shared/models/timer-state.model';
+
+const TIMER_STATE_KEY = 'hydrofocus-timer-state';
 
 class HydroFocusDailyServiceMock {
   private tasksSignal = signal<HydroTask[]>([]);
@@ -44,6 +47,7 @@ describe('TimerComponent', () => {
   let browserTab: BrowserTabProgressServiceMock;
 
   beforeEach(async () => {
+    localStorage.removeItem(TIMER_STATE_KEY);
     await TestBed.configureTestingModule({
       imports: [TimerComponent],
       providers: [
@@ -97,6 +101,36 @@ describe('TimerComponent', () => {
     component.isRunning.set(true);
     component.timeRemaining.set(1490);
     expect(browserTab.update).toHaveBeenCalled();
+  });
+
+  it('with zero completed sessions, persisted break state loads as focus', () => {
+    const persisted: TimerPersistedState = {
+      mode: 'break',
+      remainingSeconds: 300,
+      totalSeconds: 300,
+      startedAt: null,
+      isRunning: false,
+      lastUpdatedAt: Date.now(),
+      hasShownFirstFocusIntro: false,
+      hasShownFirstBreakIntro: false
+    };
+    localStorage.setItem(TIMER_STATE_KEY, JSON.stringify(persisted));
+
+    const fixture2 = TestBed.createComponent(TimerComponent);
+    const c = fixture2.componentInstance;
+    fixture2.detectChanges();
+
+    expect(c.currentMode()).toBe('focus');
+    expect(c.timeRemaining()).toBe(25 * 60);
+  });
+
+  it('skip to break does nothing to mode when no session completed yet', () => {
+    daily.setCompletedSessions(0);
+    component.currentMode.set('focus');
+    component.timeRemaining.set(25 * 60);
+    (component as unknown as { doSkipToBreak(): void }).doSkipToBreak();
+    expect(component.currentMode()).toBe('focus');
+    expect(component.timeRemaining()).toBe(25 * 60);
   });
 });
 

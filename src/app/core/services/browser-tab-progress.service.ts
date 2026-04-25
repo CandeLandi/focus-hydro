@@ -1,26 +1,35 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
+import { LanguageService } from '../i18n/language.service';
 
 type TabMode = 'focus' | 'break' | 'idle';
+type ExtendedTabMode = TabMode | 'paused';
 
 export interface BrowserTabProgressState {
-  mode: TabMode;
+  mode: ExtendedTabMode;
   remainingSeconds: number;
   totalSeconds: number;
+  dailySessions: number;
+  isRunning: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
 export class BrowserTabProgressService {
   private readonly documentRef = inject(DOCUMENT);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly translate = inject(TranslateService);
+  private readonly language = inject(LanguageService);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
   private readonly canvasSize = 64;
 
-  private readonly defaultTitle = this.isBrowser ? this.documentRef.title : 'HydroFocus';
+  private readonly defaultTitle = this.isBrowser ? this.documentRef.title : 'Focus and Hydrate';
   private defaultIconHref: string | null = null;
   private defaultIconType: string | null = null;
   private dynamicIconLink: HTMLLinkElement | null = null;
   private lastSignature = '';
+  private temporaryTitle: string | null = null;
+  private temporaryTitleTimeout: ReturnType<typeof setTimeout> | null = null;
 
   update(state: BrowserTabProgressState): void {
     if (!this.isBrowser) return;
@@ -30,20 +39,36 @@ export class BrowserTabProgressService {
       return;
     }
 
+    const i18nTick = this.language.translationTick();
     const total = Math.max(1, Math.floor(state.totalSeconds));
     const remaining = Math.min(total, Math.max(0, Math.floor(state.remainingSeconds)));
-    const progress = Math.min(1, Math.max(0, 1 - remaining / total));
-    const signature = `${state.mode}|${remaining}|${total}`;
+    const progress = state.isRunning ? Math.min(1, Math.max(0, 1 - remaining / total)) : 0;
+    const sessions = Math.max(0, Math.floor(state.dailySessions));
+    const signature = `${i18nTick}|${state.mode}|${remaining}|${total}|${sessions}|${this.temporaryTitle ?? ''}`;
     if (signature === this.lastSignature) return;
     this.lastSignature = signature;
 
     this.ensureDynamicIconLink();
-    this.updateTitle(state.mode, remaining);
-    this.updateDynamicFavicon(progress, state.mode);
+    this.renderTitle(state.mode, remaining, sessions);
+    this.updateDynamicFavicon(progress, state.mode === 'paused' ? 'focus' : state.mode);
+  }
+
+  showTemporaryTitle(message: string, durationMs = 4000): void {
+    if (!this.isBrowser) return;
+    this.clearTemporaryTitleTimeout();
+    this.temporaryTitle = message.trim();
+    this.lastSignature = '';
+    this.temporaryTitleTimeout = setTimeout(() => {
+      this.temporaryTitle = null;
+      this.temporaryTitleTimeout = null;
+      this.lastSignature = '';
+    }, durationMs);
   }
 
   restoreDefaults(): void {
     if (!this.isBrowser) return;
+    this.clearTemporaryTitleTimeout();
+    this.temporaryTitle = null;
     this.lastSignature = '';
     this.documentRef.title = this.defaultTitle;
     this.captureDefaultIconHrefIfNeeded();
@@ -52,6 +77,10 @@ export class BrowserTabProgressService {
     }
     this.dynamicIconLink = null;
     this.forceDefaultIconRefresh();
+  }
+
+  reset(): void {
+    this.restoreDefaults();
   }
 
   private ensureDynamicIconLink(): void {
@@ -94,9 +123,20 @@ export class BrowserTabProgressService {
     setTimeout(() => fallback.remove(), 0);
   }
 
-  private updateTitle(mode: Exclude<TabMode, 'idle'>, remainingSeconds: number): void {
-    const label = mode === 'focus' ? 'Foco' : 'Descanso';
-    this.documentRef.title = `${this.formatTime(remainingSeconds)} • ${label} | HydroFocus`;
+  private renderTitle(mode: Exclude<ExtendedTabMode, 'idle'>, remainingSeconds: number, dailySessions: number): void {
+    this.language.currentLanguage();
+    this.language.translationTick();
+    if (this.temporaryTitle) {
+      this.documentRef.title = this.temporaryTitle;
+      return;
+    }
+    const streak = `🔥 ${dailySessions}`;
+    if (mode === 'paused') {
+      this.documentRef.title = `⏸ ${this.t('browserTab.paused')} • ${this.formatTime(remainingSeconds)} | ${streak}`;
+      return;
+    }
+    const label = mode === 'focus' ? this.t('browserTab.focus') : this.t('browserTab.break');
+    this.documentRef.title = `${this.formatTime(remainingSeconds)} • ${label} | ${streak}`;
   }
 
   private updateDynamicFavicon(progress: number, mode: Exclude<TabMode, 'idle'>): void {
@@ -156,6 +196,17 @@ export class BrowserTabProgressService {
     const m = Math.floor(seconds / 60);
     const s = Math.floor(seconds % 60);
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }
+
+  private clearTemporaryTitleTimeout(): void {
+    if (!this.temporaryTitleTimeout) return;
+    clearTimeout(this.temporaryTitleTimeout);
+    this.temporaryTitleTimeout = null;
+  }
+
+  private t(key: string, params?: Record<string, unknown>): string {
+    const translated = this.translate.instant(key, params);
+    return typeof translated === 'string' ? translated : key;
   }
 }
 

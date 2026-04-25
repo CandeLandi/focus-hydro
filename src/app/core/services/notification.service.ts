@@ -1,4 +1,6 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, signal, inject } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
+import { LanguageService } from '../i18n/language.service';
 
 export interface NotificationSettings {
   enabled: boolean;
@@ -27,21 +29,9 @@ export class NotificationService {
   private audioContext: AudioContext | null = null;
   private visibleTip = signal<TransitionTip | null>(null);
   transitionTip = computed(() => this.visibleTip());
+  private translate = inject(TranslateService);
+  private language = inject(LanguageService);
 
-  private readonly focusToBreakTips = [
-    'Recorda la regla 20-20-20: cada 20 minutos, mira a 20 metros durante 20 segundos.',
-    'Este descanso tambien es parte del progreso: no llenes la pausa con mas pantalla.',
-    'Toma un poco de agua: mantenerte hidratado tambien ayuda a sostener la concentracion.',
-    'Relaja los hombros y endereza la espalda: pequenos ajustes evitan tension acumulada.'
-  ];
-
-  private readonly breakToFocusTips = [
-    'La constancia gana cuando la motivacion baja.',
-    'Hoy tambien suma, aunque sea poco.',
-    'Estar aca ya es parte del progreso.',
-    'Lo importante es no cortar el ritmo.',
-    'Seguir hoy es lo que hace la diferencia.'
-  ];
 
   private lastTipIndexByType: Record<TransitionTipType, number> = {
     'focus-to-break': -1,
@@ -67,7 +57,7 @@ export class NotificationService {
    */
   async requestPermission(): Promise<boolean> {
     if (!('Notification' in window)) {
-      console.warn('[HydroFocus] Este navegador no soporta notificaciones');
+      console.warn('[Focus and Hydrate] Este navegador no soporta notificaciones');
       return false;
     }
 
@@ -76,7 +66,7 @@ export class NotificationService {
     }
 
     if (Notification.permission === 'denied') {
-      console.warn('[HydroFocus] Permisos de notificación denegados');
+      console.warn('[Focus and Hydrate] Permisos de notificación denegados');
       return false;
     }
 
@@ -84,7 +74,7 @@ export class NotificationService {
       const permission = await Notification.requestPermission();
       return permission === 'granted';
     } catch (error) {
-      console.error('[HydroFocus] Error al solicitar permisos:', error);
+      console.error('[Focus and Hydrate] Error al solicitar permisos:', error);
       return false;
     }
   }
@@ -97,8 +87,8 @@ export class NotificationService {
       return;
     }
 
-    const title = 'Bloque de foco completo';
-    const message = 'Recuperá energía: hidratate y descansá unos minutos';
+    const title = this.t('notifications.focusTitle');
+    const message = this.t('notifications.focusMessage');
     this.showTransitionTip('focus-to-break');
 
     // Sonido
@@ -126,8 +116,8 @@ export class NotificationService {
       return;
     }
 
-    const title = 'Descanso terminado';
-    const message = 'Volvé a enfocarte cuando estés listo.';
+    const title = this.t('notifications.breakTitle');
+    const message = this.t('notifications.breakMessage');
     this.showTransitionTip('break-to-focus');
 
     // Sonido (más suave para el descanso)
@@ -149,7 +139,7 @@ export class NotificationService {
 
   showTransitionTip(type: TransitionTipType): void {
     const message = this.getRandomTip(type);
-    const title = type === 'focus-to-break' ? 'Tiempo de enfoque completado' : 'Volvemos al enfoque';
+    const title = type === 'focus-to-break' ? this.t('notifications.tipFocusDone') : this.t('notifications.tipBackToFocus');
     this.visibleTip.set({ type, title, message });
     this.scheduleTipAutoHide();
   }
@@ -174,7 +164,11 @@ export class NotificationService {
   }
 
   private getRandomTip(type: TransitionTipType): string {
-    const source = type === 'focus-to-break' ? this.focusToBreakTips : this.breakToFocusTips;
+    this.language.translationTick();
+    const raw = this.translate.instant(
+      type === 'focus-to-break' ? 'notifications.focusToBreakTips' : 'notifications.breakToFocusTips'
+    );
+    const source = Array.isArray(raw) ? raw : [];
     if (source.length === 0) return '';
     if (source.length === 1) return source[0];
 
@@ -185,6 +179,13 @@ export class NotificationService {
     }
     this.lastTipIndexByType[type] = nextIndex;
     return source[nextIndex];
+  }
+
+  private t(key: string, params?: Record<string, unknown>): string {
+    this.language.currentLanguage();
+    this.language.translationTick();
+    const translated = this.translate.instant(key, params);
+    return typeof translated === 'string' ? translated : key;
   }
 
   /**
@@ -221,7 +222,7 @@ export class NotificationService {
         notification.close();
       };
     } catch (error) {
-      console.error('[HydroFocus] Error al mostrar notificación:', error);
+      console.error('[Focus and Hydrate] Error al mostrar notificación:', error);
     }
   }
 
@@ -240,7 +241,7 @@ export class NotificationService {
         this.audioContext.resume();
       }
     } catch (e) {
-      console.warn('[HydroFocus] No se pudo preparar audio:', e);
+      console.warn('[Focus and Hydrate] No se pudo preparar audio:', e);
     }
   }
 
@@ -281,7 +282,7 @@ export class NotificationService {
         time += durationPerNote + gapSeconds;
       }
     } catch (error) {
-      console.error('[HydroFocus] Error al reproducir chime:', error);
+      console.error('[Focus and Hydrate] Error al reproducir chime:', error);
     }
   }
 
@@ -309,7 +310,7 @@ export class NotificationService {
       oscillator.start(t);
       oscillator.stop(t + duration);
     } catch (error) {
-      console.error('[HydroFocus] Error al reproducir sonido:', error);
+      console.error('[Focus and Hydrate] Error al reproducir sonido:', error);
     }
   }
 
@@ -354,7 +355,7 @@ export class NotificationService {
         return JSON.parse(saved);
       }
     } catch (error) {
-      console.error('[HydroFocus] Error al cargar configuración de notificaciones:', error);
+      console.error('[Focus and Hydrate] Error al cargar configuración de notificaciones:', error);
     }
 
     // Configuración por defecto: todo habilitado
@@ -372,7 +373,7 @@ export class NotificationService {
     try {
       localStorage.setItem(this.SETTINGS_KEY, JSON.stringify(this.settings));
     } catch (error) {
-      console.error('[HydroFocus] Error al guardar configuración de notificaciones:', error);
+      console.error('[Focus and Hydrate] Error al guardar configuración de notificaciones:', error);
     }
   }
 }

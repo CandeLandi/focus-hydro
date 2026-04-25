@@ -1,27 +1,49 @@
 <header
-  class="relative flex h-[74px] sm:h-[78px] lg:h-[82px] items-center justify-between overflow-hidden border-b border-[rgba(111,172,255,0.1)] bg-[linear-gradient(180deg,rgba(7,15,35,0.95)_0%,rgba(7,15,35,0.82)_100%)] px-3 sm:px-5 lg:px-[34px] backdrop-blur-[12px]"
+  class="relative flex h-[74px] sm:h-[78px] lg:h-[82px] items-center justify-between overflow-hidden border-b border-[rgba(111,172,255,0.1)] bg-[linear-gradient(180deg,rgba(7,15,35,0.95)_0%,rgba(7,15,35,0.82)_100%)] backdrop-blur-[12px]"
 >
-  <div class="max-w-6xl mx-auto w-full flex items-center justify-between gap-2 sm:gap-4">
+  <div class="max-w-6xl mx-auto w-full px-3 sm:px-5 lg:px-6 flex items-center justify-between gap-2 sm:gap-4">
     <div class="flex items-center gap-2.5 sm:gap-4 min-w-0">
-      <div
-        class="relative grid h-[52px] w-[52px] sm:h-[60px] sm:w-[60px] lg:h-[72px] lg:w-[72px] shrink-0 place-items-center overflow-hidden rounded-full border border-[rgba(140,220,255,0.14)] bg-[radial-gradient(circle_at_30%_30%,rgba(75,239,255,0.14),rgba(22,115,255,0.11)_45%,rgba(6,18,52,0.18)_100%)] shadow-[inset_0_0_16px_rgba(255,255,255,0.05)]"
-      >
+      <div class="shrink-0 flex items-center h-[54px] w-[54px] sm:h-[62px] sm:w-[62px] lg:h-[70px] lg:w-[70px] overflow-visible">
         <img
           src="/images/logo-hydrofocus.png"
-          alt="HydroFocus logo"
-          class="block h-[3.05rem] w-[3.05rem] sm:h-[3.5rem] sm:w-[3.5rem] lg:h-[4.25rem] lg:w-[4.25rem] origin-center scale-[1.68] sm:scale-[1.72] lg:scale-[1.8] object-contain object-center drop-shadow-[0_4px_8px_rgba(34,211,238,0.18)]"
+          alt="Focus and Hydrate logo"
+          class="block h-full w-full origin-center scale-[1.75] sm:scale-[1.8] lg:scale-[1.85] object-contain object-center drop-shadow-[0_6px_14px_rgba(34,211,238,0.24)]"
         />
       </div>
       <div class="min-w-0">
-        <h1 class="truncate text-[1.18rem] sm:text-[1.34rem] lg:text-2xl font-bold tracking-[-0.02em] text-[rgba(255,255,255,0.96)]">HydroFocus</h1>
-        <p class="mt-0.5 truncate text-[11px] sm:text-[12px] lg:text-[13px] font-normal text-[rgba(210,225,255,0.72)]">Pomodoro + hidratación consciente</p>
+        <h1 class="truncate text-[1.18rem] sm:text-[1.34rem] lg:text-2xl font-bold tracking-[-0.02em] text-[rgba(255,255,255,0.96)]">Focus and Hydrate</h1>
+        <p class="mt-0.5 truncate text-[11px] sm:text-[12px] lg:text-[13px] font-normal text-[rgba(210,225,255,0.72)]">{{ 'header.tagline' | translate }}</p>
       </div>
     </div>
     <div class="hidden min-[460px]:flex shrink-0 items-center gap-2 text-[11px] sm:text-[12px] lg:text-[13px] font-medium text-[rgba(220,230,255,0.78)]">
       <span class="w-2 h-2 rounded-full bg-[#35E8FF]" style="box-shadow: 0 0 12px rgba(53,232,255,0.7);"></span>
-      <span>Sesión {{ sessionNumber() }}</span>
+      <span>{{ 'header.session' | translate:{ value: sessionNumber() } }}</span>
       <span class="opacity-60">·</span>
-      <span>Hoy llevás <span class="font-semibold text-[#49e6ff]">{{ focusTimeLabel() }}</span></span>
+      <span>{{ 'header.todayFocus' | translate:{ value: focusTimeLabel() } }}</span>
+    </div>
+    <div class="shrink-0 flex items-center gap-1 rounded-full border border-[rgba(111,172,255,0.26)] bg-[rgba(6,16,40,0.62)] p-1">
+      <button
+        type="button"
+        class="rounded-full px-2 py-1 text-[10px] sm:text-[11px] font-semibold transition-all"
+        [class.bg-[rgba(49,186,255,0.3)]]="currentLanguage() === 'es'"
+        [class.text-white]="currentLanguage() === 'es'"
+        [class.text-[rgba(186,210,240,0.8)]]="currentLanguage() !== 'es'"
+        (click)="setLanguage('es')"
+        [attr.aria-label]="'lang.switchTo' | translate:{lang:'ES'}"
+      >
+        ES
+      </button>
+      <button
+        type="button"
+        class="rounded-full px-2 py-1 text-[10px] sm:text-[11px] font-semibold transition-all"
+        [class.bg-[rgba(49,186,255,0.3)]]="currentLanguage() === 'en'"
+        [class.text-white]="currentLanguage() === 'en'"
+        [class.text-[rgba(186,210,240,0.8)]]="currentLanguage() !== 'en'"
+        (click)="setLanguage('en')"
+        [attr.aria-label]="'lang.switchTo' | translate:{lang:'EN'}"
+      >
+        EN
+      </button>
     </div>
   </div>
 </header>

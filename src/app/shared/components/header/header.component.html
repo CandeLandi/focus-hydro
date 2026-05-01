@@ -1,49 +1,56 @@
-<header
-  class="relative flex h-[74px] sm:h-[78px] lg:h-[82px] items-center justify-between overflow-hidden border-b border-[rgba(111,172,255,0.1)] bg-[linear-gradient(180deg,rgba(7,15,35,0.95)_0%,rgba(7,15,35,0.82)_100%)] backdrop-blur-[12px]"
->
-  <div class="max-w-6xl mx-auto w-full px-3 sm:px-5 lg:px-6 flex items-center justify-between gap-2 sm:gap-4">
-    <div class="flex items-center gap-2.5 sm:gap-4 min-w-0">
-      <div class="shrink-0 flex items-center h-[54px] w-[54px] sm:h-[62px] sm:w-[62px] lg:h-[70px] lg:w-[70px] overflow-visible">
+<header class="focusflow-header">
+  <div class="focusflow-header-inner">
+    <div class="focusflow-brand">
+      <div class="focusflow-logo-frame">
         <img
           src="/images/logo-hydrofocus.png"
-          alt="Focus and Hydrate logo"
-          class="block h-full w-full origin-center scale-[1.75] sm:scale-[1.8] lg:scale-[1.85] object-contain object-center drop-shadow-[0_6px_14px_rgba(34,211,238,0.24)]"
+          alt="FocusFlow logo"
+          class="focusflow-logo"
         />
       </div>
-      <div class="min-w-0">
-        <h1 class="truncate text-[1.18rem] sm:text-[1.34rem] lg:text-2xl font-bold tracking-[-0.02em] text-[rgba(255,255,255,0.96)]">Focus and Hydrate</h1>
-        <p class="mt-0.5 truncate text-[11px] sm:text-[12px] lg:text-[13px] font-normal text-[rgba(210,225,255,0.72)]">{{ 'header.tagline' | translate }}</p>
+      <div class="focusflow-brand-copy">
+        <h1>Focus<span>Flow</span></h1>
+        <p>{{ 'header.tagline' | translate }}</p>
       </div>
     </div>
-    <div class="hidden min-[460px]:flex shrink-0 items-center gap-2 text-[11px] sm:text-[12px] lg:text-[13px] font-medium text-[rgba(220,230,255,0.78)]">
-      <span class="w-2 h-2 rounded-full bg-[#35E8FF]" style="box-shadow: 0 0 12px rgba(53,232,255,0.7);"></span>
+
+    <div class="focusflow-live">
+      <span class="focusflow-live-dot"></span>
       <span>{{ 'header.session' | translate:{ value: sessionNumber() } }}</span>
-      <span class="opacity-60">·</span>
+      <span class="focusflow-live-separator">·</span>
       <span>{{ 'header.todayFocus' | translate:{ value: focusTimeLabel() } }}</span>
     </div>
-    <div class="shrink-0 flex items-center gap-1 rounded-full border border-[rgba(111,172,255,0.26)] bg-[rgba(6,16,40,0.62)] p-1">
+
+    <div class="focusflow-header-actions">
       <button
         type="button"
-        class="rounded-full px-2 py-1 text-[10px] sm:text-[11px] font-semibold transition-all"
-        [class.bg-[rgba(49,186,255,0.3)]]="currentLanguage() === 'es'"
-        [class.text-white]="currentLanguage() === 'es'"
-        [class.text-[rgba(186,210,240,0.8)]]="currentLanguage() !== 'es'"
-        (click)="setLanguage('es')"
-        [attr.aria-label]="'lang.switchTo' | translate:{lang:'ES'}"
+        class="focusflow-ambient-btn"
+        [class.focusflow-ambient-btn--on]="ambient.userEnabled()"
+        [class.focusflow-ambient-btn--playing]="ambient.isPlaying()"
+        (click)="ambient.onHeaderButtonClick()"
+        [attr.aria-label]="'header.ambientAria' | translate"
+        [attr.title]="'header.ambientTitle' | translate"
       >
-        ES
+        <span class="pi pi-wave-pulse" aria-hidden="true"></span>
       </button>
-      <button
-        type="button"
-        class="rounded-full px-2 py-1 text-[10px] sm:text-[11px] font-semibold transition-all"
-        [class.bg-[rgba(49,186,255,0.3)]]="currentLanguage() === 'en'"
-        [class.text-white]="currentLanguage() === 'en'"
-        [class.text-[rgba(186,210,240,0.8)]]="currentLanguage() !== 'en'"
-        (click)="setLanguage('en')"
-        [attr.aria-label]="'lang.switchTo' | translate:{lang:'EN'}"
-      >
-        EN
-      </button>
+      <div class="focusflow-language">
+        <button
+          type="button"
+          [class.focusflow-language-active]="currentLanguage() === 'es'"
+          (click)="setLanguage('es')"
+          [attr.aria-label]="'lang.switchTo' | translate:{lang:'ES'}"
+        >
+          ES
+        </button>
+        <button
+          type="button"
+          [class.focusflow-language-active]="currentLanguage() === 'en'"
+          (click)="setLanguage('en')"
+          [attr.aria-label]="'lang.switchTo' | translate:{lang:'EN'}"
+        >
+          EN
+        </button>
+      </div>
     </div>
   </div>
 </header>

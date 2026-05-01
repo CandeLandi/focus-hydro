@@ -4,16 +4,20 @@ import { localeRouteGuard } from './core/i18n/locale-route.guard';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'es',
-    pathMatch: 'full'
+    loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent)
   },
   {
-    path: ':lang',
+    path: 'es',
+    canActivate: [localeRouteGuard],
+    loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent)
+  },
+  {
+    path: 'en',
     canActivate: [localeRouteGuard],
     loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent)
   },
   {
     path: '**',
-    redirectTo: 'es'
+    redirectTo: ''
   }
 ];

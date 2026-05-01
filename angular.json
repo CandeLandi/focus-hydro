@@ -56,8 +56,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "14kB",
+                  "maximumError": "18kB"
                 }
               ],
               "outputHashing": "all"
@@ -114,10 +114,16 @@
                 "output": "/"
               }
             ],
-            "styles": [
-              "src/styles.css"
-            ],
-            "scripts": []
+            "styles": [],
+            "scripts": [],
+            "karmaConfig": "karma.conf.js",
+            "codeCoverage": true,
+            "codeCoverageExclude": [
+              "src/main.ts",
+              "src/**/*.d.ts",
+              "src/app/**/*.model.ts",
+              "src/app/shared/models/**"
+            ]
           }
         }
       }

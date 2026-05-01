@@ -1,6 +1,15 @@
 @import "tailwindcss";
 @import "primeicons/primeicons.css";
 
+/* Reduce double-tap zoom / incidental pinch on mobile web (meta viewport also limits zoom). */
+html {
+  touch-action: manipulation;
+}
+
+body {
+  touch-action: manipulation;
+}
+
 /* ---- App shell: fondo con profundidad y atmósfera ---- */
 .hydro-app-bg {
   position: relative;
@@ -85,16 +94,16 @@
 }
 
 /* ---- Focus and Hydrate + PrimeNG Dialog: unified design system ---- */
+.p-dialog.hydro-dialog,
 .hydro-dialog .p-dialog {
   background:
-    radial-gradient(circle at 50% -22%, rgba(56, 189, 248, 0.16) 0%, rgba(56, 189, 248, 0) 52%),
-    radial-gradient(circle at 84% 116%, rgba(167, 139, 250, 0.09) 0%, rgba(167, 139, 250, 0) 34%),
-    linear-gradient(180deg, rgba(7, 28, 60, 0.97) 0%, rgba(6, 21, 45, 0.985) 58%, rgba(5, 16, 35, 1) 100%);
-  border: 1px solid rgba(88, 165, 238, 0.34);
+    radial-gradient(circle at 50% -22%, rgba(100, 116, 139, 0.12) 0%, rgba(100, 116, 139, 0) 52%),
+    linear-gradient(180deg, rgba(12, 17, 29, 0.98) 0%, rgba(7, 11, 20, 0.99) 62%, rgba(4, 7, 13, 1) 100%);
+  border: 1px solid rgba(100, 116, 139, 0.28);
   border-radius: 16px;
   box-shadow:
     0 22px 48px rgba(2, 10, 28, 0.6),
-    0 0 0 1px rgba(125, 211, 252, 0.06) inset;
+    0 0 0 1px rgba(255, 255, 255, 0.035) inset;
   backdrop-filter: blur(2px);
   overflow: hidden;
   max-height: min(92vh, 820px);
@@ -167,6 +176,35 @@
   align-items: flex-start;
   gap: 0.75rem;
   width: 100%;
+}
+
+.session-intro-header {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hydro-dialog-icon-action {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 10px;
+  border: 1px solid rgba(100, 116, 139, 0.32);
+  background: rgba(15, 23, 42, 0.68);
+  color: rgba(226, 232, 240, 0.92);
+  display: grid;
+  place-items: center;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
+}
+
+.hydro-dialog-icon-action:hover {
+  border-color: rgba(148, 163, 184, 0.48);
+  background: rgba(24, 32, 46, 0.82);
+  color: #f8fafc;
+}
+
+.hydro-dialog-icon-action-confirm {
+  border-color: rgba(125, 211, 252, 0.34);
+  color: rgba(186, 230, 253, 0.96);
 }
 
 /* Icono neutro (sin colores chillones) */
@@ -251,25 +289,25 @@
 }
 
 .hydro-dialog-btn-primary.p-button {
-  background: linear-gradient(180deg, rgba(56, 128, 236, 0.94) 0%, rgba(38, 97, 197, 0.96) 100%) !important;
-  border: 1px solid rgba(118, 194, 255, 0.48) !important;
+  background: linear-gradient(180deg, rgba(31, 41, 55, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%) !important;
+  border: 1px solid rgba(100, 116, 139, 0.38) !important;
   color: #eff6ff !important;
   font-weight: 500 !important;
   border-radius: 10px !important;
   padding: 0.5rem 1rem !important;
-  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22) !important;
+  box-shadow: 0 8px 18px rgba(2, 6, 23, 0.22) !important;
   transition: background 0.15s ease, border-color 0.15s ease !important;
 }
 
 .hydro-dialog-btn-primary.p-button:hover {
-  background: linear-gradient(180deg, rgba(65, 140, 244, 0.96) 0%, rgba(44, 108, 211, 0.98) 100%) !important;
-  border-color: rgba(153, 214, 255, 0.62) !important;
+  background: linear-gradient(180deg, rgba(42, 52, 68, 0.98) 0%, rgba(22, 32, 49, 0.98) 100%) !important;
+  border-color: rgba(148, 163, 184, 0.58) !important;
   transform: none;
 }
 
 .hydro-dialog-btn-muted.p-button {
-  background: linear-gradient(180deg, rgba(9, 30, 60, 0.72) 0%, rgba(7, 21, 44, 0.84) 100%) !important;
-  border: 1px solid rgba(88, 156, 232, 0.44) !important;
+  background: linear-gradient(180deg, rgba(21, 28, 42, 0.82) 0%, rgba(10, 15, 26, 0.9) 100%) !important;
+  border: 1px solid rgba(100, 116, 139, 0.36) !important;
   color: #dbeafe !important;
   font-weight: 500 !important;
   border-radius: 10px !important;
@@ -279,8 +317,8 @@
 }
 
 .hydro-dialog-btn-muted.p-button:hover {
-  background: linear-gradient(180deg, rgba(10, 36, 70, 0.78) 0%, rgba(8, 27, 54, 0.9) 100%) !important;
-  border-color: rgba(125, 195, 250, 0.58) !important;
+  background: linear-gradient(180deg, rgba(30, 39, 55, 0.86) 0%, rgba(16, 23, 36, 0.92) 100%) !important;
+  border-color: rgba(148, 163, 184, 0.5) !important;
   transform: none;
 }
 
@@ -320,9 +358,9 @@
 
 .task-feedback-toast .p-toast-message {
   background:
-    radial-gradient(circle at 92% -24%, rgba(56, 189, 248, 0.12) 0%, rgba(56, 189, 248, 0) 56%),
-    linear-gradient(180deg, rgba(7, 23, 48, 0.94) 0%, rgba(6, 18, 37, 0.97) 100%);
-  border: 1px solid rgba(92, 155, 226, 0.32);
+    radial-gradient(circle at 92% -24%, rgba(100, 116, 139, 0.1) 0%, rgba(100, 116, 139, 0) 56%),
+    linear-gradient(180deg, rgba(12, 17, 29, 0.95) 0%, rgba(7, 11, 20, 0.98) 100%);
+  border: 1px solid rgba(100, 116, 139, 0.28);
   color: rgba(226, 236, 250, 0.96);
   backdrop-filter: blur(6px);
   border-radius: 0.72rem;
@@ -332,7 +370,9 @@
 }
 
 .task-feedback-toast.p-toast {
-  width: min(90vw, 20rem);
+  width: min(calc(100vw - 1rem), 20rem);
+  max-width: calc(100vw - 1rem);
+  box-sizing: border-box;
 }
 
 .task-feedback-toast .p-toast-message .p-toast-message-content {
@@ -394,12 +434,11 @@
 /* Share name dialog: minimal blue variant */
 .p-dialog.hydro-dialog.share-name-dialog {
   border-radius: 16px;
-  border: 1px solid rgba(86, 170, 245, 0.4) !important;
+  border: 1px solid rgba(100, 116, 139, 0.3) !important;
   background:
-    radial-gradient(circle at 50% -18%, rgba(56, 189, 248, 0.18) 0%, rgba(56, 189, 248, 0) 50%),
-    radial-gradient(circle at 84% 115%, rgba(167, 139, 250, 0.1) 0%, rgba(167, 139, 250, 0) 36%),
-    linear-gradient(180deg, rgba(7, 28, 60, 0.98) 0%, rgba(6, 20, 44, 0.99) 56%, rgba(5, 16, 36, 1) 100%) !important;
-  box-shadow: 0 22px 48px rgba(2, 10, 28, 0.62), 0 0 0 1px rgba(125, 211, 252, 0.08) inset !important;
+    radial-gradient(circle at 50% -18%, rgba(100, 116, 139, 0.12) 0%, rgba(100, 116, 139, 0) 50%),
+    linear-gradient(180deg, rgba(12, 17, 29, 0.98) 0%, rgba(7, 11, 20, 0.99) 60%, rgba(4, 7, 13, 1) 100%) !important;
+  box-shadow: 0 22px 48px rgba(2, 10, 28, 0.62), 0 0 0 1px rgba(255, 255, 255, 0.04) inset !important;
 }
 
 .share-name-dialog .p-dialog-header {
@@ -413,12 +452,11 @@
 /* Pomodoro settings dialog: blue, clean, consistent with celebration */
 .p-dialog.hydro-dialog.pomodoro-settings-dialog {
   border-radius: 16px;
-  border: 1px solid rgba(84, 170, 245, 0.4) !important;
+  border: 1px solid rgba(100, 116, 139, 0.3) !important;
   background:
-    radial-gradient(circle at 50% -22%, rgba(56, 189, 248, 0.16) 0%, rgba(56, 189, 248, 0) 52%),
-    radial-gradient(circle at 85% 116%, rgba(167, 139, 250, 0.09) 0%, rgba(167, 139, 250, 0) 34%),
-    linear-gradient(180deg, rgba(7, 28, 60, 0.98) 0%, rgba(6, 21, 45, 0.99) 58%, rgba(5, 16, 35, 1) 100%) !important;
-  box-shadow: 0 22px 48px rgba(2, 10, 28, 0.62), 0 0 0 1px rgba(125, 211, 252, 0.08) inset !important;
+    radial-gradient(circle at 50% -22%, rgba(100, 116, 139, 0.12) 0%, rgba(100, 116, 139, 0) 52%),
+    linear-gradient(180deg, rgba(12, 17, 29, 0.98) 0%, rgba(7, 11, 20, 0.99) 60%, rgba(4, 7, 13, 1) 100%) !important;
+  box-shadow: 0 22px 48px rgba(2, 10, 28, 0.62), 0 0 0 1px rgba(255, 255, 255, 0.04) inset !important;
 }
 
 .pomodoro-settings-dialog .p-dialog-header {
@@ -440,3 +478,252 @@
   background: linear-gradient(180deg, rgba(11, 31, 62, 0.78) 0%, rgba(8, 24, 48, 0.88) 100%) !important;
 }
 
+/* Pomodoro settings: compact mobile layout (dialog appendTo body → global scope) */
+@media (max-width: 640px) {
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog {
+    width: calc(100vw - 32px) !important;
+    max-width: calc(100vw - 32px) !important;
+    margin: max(0.5rem, env(safe-area-inset-top, 0px)) auto max(0.75rem, env(safe-area-inset-bottom, 0px)) !important;
+    max-height: min(85dvh, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 20px));
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .p-dialog-header {
+    padding: 0.55rem 0.7rem 0.3rem !important;
+    flex-shrink: 0;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .p-dialog-content {
+    padding: 0 0.7rem 0.55rem !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .hydro-dialog-title {
+    font-size: 1.02rem;
+    line-height: 1.22;
+    letter-spacing: -0.01em;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .hydro-dialog-subtitle {
+    font-size: 0.7rem;
+    line-height: 1.35;
+    margin-top: 0.12rem;
+    color: rgba(176, 191, 220, 0.78);
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .hydro-dialog-body {
+    padding-top: 0.15rem;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .pomodoro-preset-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .pomodoro-preset-row .pomodoro-preset-chip:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .pomodoro-preset-chip {
+    min-height: 40px !important;
+    padding: 0.38rem 0.5rem !important;
+    font-size: 11px !important;
+    border-radius: 11px !important;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .pomodoro-settings-helper {
+    margin-top: 0.45rem !important;
+    margin-bottom: 0 !important;
+    font-size: 10px !important;
+    line-height: 1.35 !important;
+    color: rgba(148, 163, 184, 0.72) !important;
+  }
+
+  /* InputNumber stacked: buttons overlay inside field — compact height, full radius */
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .p-inputnumber {
+    width: 100%;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .p-inputnumber .p-inputtext {
+    width: 100% !important;
+    height: 44px !important;
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    border-radius: 11px !important;
+    padding-inline: 0.65rem 2.35rem !important;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .p-inputnumber-stacked .p-inputnumber-button-group {
+    width: 1.85rem !important;
+    inset-inline-end: 3px !important;
+    height: calc(100% - 6px) !important;
+    inset-block-start: 3px !important;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .p-inputnumber-stacked .p-inputnumber-button .pi {
+    font-size: 0.65rem !important;
+  }
+}
+
+/* ---- PrimeNG Toast: responsive global (LinkedIn share + cualquier toast) ---- */
+.focusflow-toast-host.p-toast.p-component,
+.p-toast.p-component.focusflow-toast-host {
+  width: min(calc(100vw - 1rem), 28rem);
+  max-width: calc(100vw - max(1rem, calc(env(safe-area-inset-left, 0px) + env(safe-area-inset-right, 0px))));
+  box-sizing: border-box;
+  padding-inline-start: max(0.35rem, env(safe-area-inset-left, 0px));
+  padding-inline-end: max(0.35rem, env(safe-area-inset-right, 0px));
+}
+
+.focusflow-toast-host.p-toast-top-center {
+  top: max(12px, calc(env(safe-area-inset-top, 0px) + 8px)) !important;
+}
+
+.focusflow-toast-host .p-toast-message {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.focusflow-toast-host .p-toast-message-text {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.focusflow-toast-host .p-toast-message-content {
+  align-items: flex-start;
+}
+
+.focusflow-toast-host .p-toast-summary {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.35;
+}
+
+.focusflow-toast-host .p-toast-detail {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
+  line-height: 1.45;
+}
+
+@media (max-width: 480px) {
+  .focusflow-toast-host.p-toast.p-component {
+    width: calc(100vw - 0.75rem);
+    max-width: calc(100vw - 0.75rem);
+  }
+
+  .focusflow-toast-host .p-toast-message-content {
+    padding: 0.52rem 0.58rem !important;
+    gap: 0.35rem !important;
+  }
+
+  .focusflow-toast-host .p-toast-summary {
+    font-size: 0.84rem !important;
+  }
+
+  .focusflow-toast-host .p-toast-detail {
+    font-size: 0.74rem !important;
+    max-height: min(42vh, 15rem);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding-right: 0.15rem;
+  }
+
+  .focusflow-toast-host .p-toast-close-button {
+    flex-shrink: 0;
+  }
+}
+
+/* ---- Hydro dialogs: mobile-safe layout (todas las modales PrimeNG .hydro-dialog) ---- */
+@media (max-width: 640px) {
+  .p-dialog.hydro-dialog {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    margin-block-start: max(0.45rem, env(safe-area-inset-top, 0px)) !important;
+    margin-block-end: max(0.65rem, env(safe-area-inset-bottom, 0px)) !important;
+    margin-inline: auto !important;
+    max-height: min(
+      90dvh,
+      calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 18px)
+    ) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  .hydro-dialog .p-dialog-header {
+    flex-shrink: 0;
+  }
+
+  .hydro-dialog .p-dialog-footer {
+    flex-shrink: 0;
+  }
+
+  .hydro-dialog .p-dialog-content {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  .hydro-dialog-title {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
+    line-height: 1.22;
+  }
+
+  .hydro-dialog-subtitle {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
+    line-height: 1.35;
+  }
+
+  .hydro-dialog-text {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
+  }
+
+  .hydro-dialog-footer-actions {
+    justify-content: stretch;
+    gap: 0.55rem;
+  }
+
+  .hydro-dialog-footer-actions .p-button {
+    flex: 1 1 calc(50% - 0.3rem);
+    min-width: 0;
+    justify-content: center;
+  }
+
+  .hydro-dialog-footer-single .p-button {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .hydro-dialog-footer-actions:not(.hydro-dialog-footer-single) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hydro-dialog-footer-actions:not(.hydro-dialog-footer-single) .p-button {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+}

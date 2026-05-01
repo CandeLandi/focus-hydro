@@ -67,8 +67,6 @@ export class HydroFocusDailyService {
     if (parsed.totalFocusMinutes > 0 && parsed.totalFocusMinutes < block) {
       parsed.totalFocusMinutes = parsed.completedSessions > 0 ? parsed.completedSessions * block : block;
     }
-    // Solo alinear sesiones desde minutos cuando completedSessions quedó en 0 (legacy).
-    // Subir completedSessions desde totalFocusMinutes en general rompe al cambiar la duración del bloque o al recargar.
     if (block > 0) {
       const impliedSessions = Math.floor(parsed.totalFocusMinutes / block);
       if (parsed.completedSessions === 0 && impliedSessions > 0) {

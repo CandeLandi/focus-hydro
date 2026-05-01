@@ -1,219 +1,564 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 import { CelebrationStats } from '../../shared/models/celebration.model';
+
+/** Copy for the downloadable share image; driven by `shareCard.*` i18n keys (plus computed attribution). */
+interface ShareCardCopy {
+  readonly hashtag: string;
+  /** Full line “Progress by Name”; empty hides the line */
+  readonly attributionLine: string;
+  readonly titleObjective: string;
+  readonly titleDone: string;
+  readonly subtitlePart1: string;
+  readonly subtitlePart2: string;
+  readonly statsTasksSingular: string;
+  readonly statsTasksPlural: string;
+  readonly statsFocus: string;
+  readonly statsProgress: string;
+  readonly hydrationLead: string;
+  readonly hydrationHighlight: string;
+  readonly hydrationTagline: string;
+  readonly footerTagline: string;
+}
+
+/** Share-card palette aligned with FocusFlow cyan → purple neon look. */
+const COL = {
+  bgTop: '#050a14',
+  bgMid: '#070f1f',
+  bgBot: '#040812',
+  cyan: '#22d3ee',
+  cyanBright: '#5cefff',
+  purple: '#c084fc',
+  white: '#f8fafc',
+  muted: 'rgba(186, 210, 238, 0.72)',
+  muted2: 'rgba(148, 176, 210, 0.52)',
+  stroke: 'rgba(255,255,255,0.06)'
+} as const;
+
+const W = 1200;
+const H = 1200;
+
+/** Vertical rhythm: header → hero → title → subtitle/attribution → stats → hydration → footer */
+const L = {
+  marginX: 80,
+  /** Space from canvas top to hero center (hero sits higher → more room below) */
+  heroCy: 198,
+  heroROuter: 104,
+  heroRInner: 78,
+  /** Pixels below lowest hero paint before title baseline */
+  gapHeroToTitle: 78,
+  titleFont: '800 64px Inter, system-ui, -apple-system, sans-serif',
+  gapTitleToSubtitle: 36,
+  subtitleFont: '500 25px Inter, system-ui, -apple-system, sans-serif',
+  gapSubtitleToAttribution: 28,
+  attributionFont: '500 17px Inter, system-ui, -apple-system, sans-serif',
+  gapAttributionBlockToStats: 48,
+  /** Stats card geometry */
+  cardH: 158,
+  cardRadius: 18,
+  gapStatsToHydration: 44,
+  hydrationFont: '500 26px Inter, system-ui, -apple-system, sans-serif',
+  /** Footer anchored from bottom */
+  footerBottomPad: 88
+};
 
 @Injectable({
   providedIn: 'root'
 })
 export class ImageGeneratorService {
+  private readonly translate = inject(TranslateService);
+
   async generateLinkedInImage(stats: CelebrationStats): Promise<string> {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
 
     if (!ctx) {
-      throw new Error('No se pudo obtener el contexto del canvas');
+      throw new Error('[FocusFlow] No se pudo obtener el contexto del canvas');
     }
 
-    canvas.width = 1200;
-    canvas.height = 1200;
+    canvas.width = W;
+    canvas.height = H;
 
-    this.drawBackground(ctx, canvas.width, canvas.height);
-    await this.drawHeroGraphic(ctx, canvas.width);
-    this.drawHeaderTexts(ctx, canvas.width, stats);
-    this.drawStats(ctx, canvas.width, stats);
-    await this.drawBranding(ctx, canvas.width, canvas.height);
+    const copy = this.buildShareCardCopy(stats);
+
+    this.drawBackground(ctx, W, H);
+    this.drawHashtag(ctx, copy.hashtag);
+
+    const heroBottom = this.drawHeroSuccessRing(ctx);
+    const titleBaseline = heroBottom + L.gapHeroToTitle;
+    let y = this.drawTitleBlock(ctx, stats, titleBaseline, copy);
+    y += L.gapAttributionBlockToStats;
+
+    const afterCard = this.drawStatsCard(ctx, stats, y, copy);
+    this.drawHydrationMessageCentered(ctx, afterCard + L.gapStatsToHydration, copy);
+
+    await this.drawFooterCentered(ctx, copy, L.footerBottomPad);
 
     return canvas.toDataURL('image/png');
   }
 
-  downloadImage(dataUrl: string, filename: string = 'focus-and-hydrate-logro.png'): void {
+  private tc(sub: string): string {
+    return this.translate.instant(`shareCard.${sub}`) as string;
+  }
+
+  private buildShareCardCopy(stats: CelebrationStats): ShareCardCopy {
+    return {
+      hashtag: this.tc('hashtag'),
+      attributionLine: this.buildAttributionLine(stats),
+      titleObjective: this.tc('titleObjective'),
+      titleDone: this.tc('titleDone'),
+      subtitlePart1: this.tc('subtitlePart1'),
+      subtitlePart2: this.tc('subtitlePart2'),
+      statsTasksSingular: this.tc('statsTasksSingular'),
+      statsTasksPlural: this.tc('statsTasksPlural'),
+      statsFocus: this.tc('statsFocus'),
+      statsProgress: this.tc('statsProgress'),
+      hydrationLead: this.tc('hydrationLead'),
+      hydrationHighlight: this.tc('hydrationHighlight'),
+      hydrationTagline: this.tc('hydrationTagline'),
+      footerTagline: this.tc('footerTagline')
+    };
+  }
+
+  /** Single localized line or empty → hidden */
+  private buildAttributionLine(stats: CelebrationStats): string {
+    const raw = stats.displayName?.trim() ?? '';
+    if (!this.isDisplayNameEligible(raw)) {
+      return '';
+    }
+    return this.translate.instant('shareCard.progressBy', { name: raw }) as string;
+  }
+
+  private isDisplayNameEligible(s: string): boolean {
+    if (s.length < 2 || s.length > 56) return false;
+    const lower = s.toLowerCase();
+    if (['undefined', 'null', 'anonymous', 'user', 'usuario', 'test'].includes(lower)) return false;
+    return /[a-zA-ZÀ-ÿ\u00f1\u00d1]/.test(s);
+  }
+
+  downloadImage(dataUrl: string, filename: string = 'focusflow-logro.png'): void {
     const link = document.createElement('a');
     link.download = filename;
     link.href = dataUrl;
     link.click();
   }
 
-  getSuggestedPostText(stats: CelebrationStats): string {
-    const authorLine = stats.displayName ? `Soy ${stats.displayName} y hoy cerré mi objetivo diario en Focus and Hydrate.\n\n` : '';
-    return (
-      `¡Objetivo del día cumplido! 🎯\n\n` +
-      authorLine +
-      `✅ ${stats.tasksCompleted} tareas completadas\n` +
-      `⏱️ ${stats.totalFocusTime} de enfoque con la Técnica Pomodoro\n` +
-      `💧 Enfoque + hidratación = productividad sostenible\n\n` +
-      `#Productividad #Pomodoro #Enfoque #FocusAndHydrate`
-    );
-  }
-
   private drawBackground(ctx: CanvasRenderingContext2D, width: number, height: number): void {
-    const bg = ctx.createLinearGradient(0, 0, 0, height);
-    bg.addColorStop(0, '#060d1f');
-    bg.addColorStop(1, '#08132a');
-    ctx.fillStyle = bg;
+    const g = ctx.createLinearGradient(0, 0, 0, height);
+    g.addColorStop(0, COL.bgTop);
+    g.addColorStop(0.45, COL.bgMid);
+    g.addColorStop(1, COL.bgBot);
+    ctx.fillStyle = g;
     ctx.fillRect(0, 0, width, height);
 
-    const topHalo = ctx.createRadialGradient(width / 2, 120, 40, width / 2, 120, 420);
-    topHalo.addColorStop(0, 'rgba(34, 211, 238, 0.2)');
-    topHalo.addColorStop(1, 'rgba(34, 211, 238, 0)');
-    ctx.fillStyle = topHalo;
-    ctx.fillRect(0, 0, width, 480);
-
-    ctx.strokeStyle = 'rgba(148, 163, 184, 0.08)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(30, 30, width - 60, height - 60);
+    const halo = ctx.createRadialGradient(width / 2, height * 0.18, 0, width / 2, height * 0.18, width * 0.5);
+    halo.addColorStop(0, 'rgba(34, 211, 238, 0.045)');
+    halo.addColorStop(0.55, 'rgba(192, 132, 252, 0.035)');
+    halo.addColorStop(1, 'rgba(5,10,20,0)');
+    ctx.fillStyle = halo;
+    ctx.fillRect(0, 0, width, height * 0.5);
   }
 
-  private async drawHeroGraphic(ctx: CanvasRenderingContext2D, width: number): Promise<void> {
-    const hero = await this.loadImage('/images/winners.png');
-    const maxW = 360;
-    const scale = Math.min(maxW / hero.width, 1);
-    const drawW = hero.width * scale;
-    const drawH = hero.height * scale;
-    const x = (width - drawW) / 2;
-    const y = 130;
-
+  private drawHashtag(ctx: CanvasRenderingContext2D, hashtag: string): void {
     ctx.save();
-    ctx.globalAlpha = 0.93;
-    ctx.drawImage(hero, x, y, drawW, drawH);
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'top';
+    ctx.font = '600 20px Inter, system-ui, -apple-system, sans-serif';
+    ctx.fillStyle = COL.cyanBright;
+    ctx.shadowColor = 'rgba(34, 211, 238, 0.22)';
+    ctx.shadowBlur = 8;
+    ctx.fillText(hashtag, W - L.marginX, 56);
     ctx.restore();
   }
 
-  private drawHeaderTexts(ctx: CanvasRenderingContext2D, width: number, stats: CelebrationStats): void {
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'alphabetic';
+  /** Ring + check; sparkles restricted to upper arc (quieter). Returns Y of hero bottom rim + padding (no overlap with title zone). */
+  private drawHeroSuccessRing(ctx: CanvasRenderingContext2D): number {
+    const cx = W / 2;
+    const cy = L.heroCy;
+    const rOuter = L.heroROuter;
+    const rInner = L.heroRInner;
 
-    ctx.fillStyle = '#f8fafc';
-    ctx.font = '700 64px Inter, system-ui, -apple-system, sans-serif';
-    ctx.fillText('Objetivo cumplido', width / 2, 520);
-
-    ctx.fillStyle = '#9fb0cb';
-    ctx.font = '400 30px Inter, system-ui, -apple-system, sans-serif';
-    const subtitle = stats.displayName ? `Resumen de productividad de ${stats.displayName}` : 'Resumen de productividad del día';
-    ctx.fillText(subtitle, width / 2, 565);
-
-    ctx.fillStyle = 'rgba(34, 211, 238, 0.92)';
-    ctx.font = '500 30px Inter, system-ui, -apple-system, sans-serif';
-    ctx.fillText(this.getMotivationalPhrase(stats.tasksCompleted), width / 2, 620);
-  }
-
-  private getMotivationalPhrase(seed: number): string {
-    const phrases = [
-      'Pequeños pasos, grandes logros.',
-      'La constancia vence al talento.',
-      'Enfoque + hidratación = mejor tú.',
-      'Cada pomodoro te acerca a la meta.',
-      'Productividad sostenible, no quemarte.'
-    ];
-    return phrases[seed % phrases.length];
-  }
-
-  private drawStats(ctx: CanvasRenderingContext2D, canvasWidth: number, stats: CelebrationStats): void {
-    const statsY = 700;
-    const statWidth = 300;
-    const statHeight = 132;
-    const spacing = 34;
-    const totalWidth = statWidth * 3 + spacing * 2;
-    const startX = (canvasWidth - totalWidth) / 2;
-
-    const statsData = [
-      { value: stats.tasksCompleted.toString(), label: 'Tareas Completadas', color: '#06b6d4' },
-      { value: stats.totalFocusTime, label: 'Tiempo de Enfoque', color: '#34d399' },
-      { value: `${stats.completionPercentage}%`, label: 'Progreso', color: '#a78bfa' }
-    ];
-
-    statsData.forEach((stat, index) => {
-      const x = startX + (statWidth + spacing) * index;
-
-      ctx.fillStyle = 'rgba(17, 28, 51, 0.68)';
-      this.roundRect(ctx, x, statsY, statWidth, statHeight, 18);
-      ctx.fill();
-
-      ctx.strokeStyle = this.addAlpha(stat.color, 0.24);
-      ctx.lineWidth = 1;
-      this.roundRect(ctx, x, statsY, statWidth, statHeight, 18);
-      ctx.stroke();
-
-      ctx.fillStyle = stat.color;
-      ctx.font = '700 58px Inter, system-ui, -apple-system, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'alphabetic';
-      ctx.fillText(stat.value, x + statWidth / 2, statsY + 72);
-
-      ctx.fillStyle = '#90a0bc';
-      ctx.font = '500 20px Inter, system-ui, -apple-system, sans-serif';
-      ctx.fillText(stat.label, x + statWidth / 2, statsY + 113);
-    });
-  }
-
-  private addAlpha(color: string, alpha: number): string {
-    const hex = color.replace('#', '');
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  }
-
-  private async drawBranding(ctx: CanvasRenderingContext2D, width: number, height: number): Promise<void> {
-    const brandingY = height - 168;
-    const brandingWidth = 500;
-    const brandingX = (width - brandingWidth) / 2;
-    const brandingHeight = 92;
-
-    ctx.fillStyle = 'rgba(17, 28, 51, 0.55)';
-    this.roundRect(ctx, brandingX, brandingY, brandingWidth, brandingHeight, 14);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(148, 163, 184, 0.14)';
-    ctx.lineWidth = 1;
-    this.roundRect(ctx, brandingX, brandingY, brandingWidth, brandingHeight, 14);
-    ctx.stroke();
-
-    const logoX = brandingX + 28;
-    const logoY = brandingY + 12;
-    const logoSize = 68;
-    try {
-      const logo = await this.loadImage('/images/logo-hydrofocus.png');
-      ctx.save();
-      ctx.globalAlpha = 0.98;
-      ctx.drawImage(logo, logoX, logoY, logoSize, logoSize);
-      ctx.restore();
-    } catch (error) {
-      console.error('[Focus and Hydrate] No se pudo cargar el logo para branding', error);
+    const sparkleCount = 5;
+    for (let i = 0; i < sparkleCount; i++) {
+      const t = i / (sparkleCount - 1);
+      const a = -Math.PI * 1.05 + t * Math.PI * 0.65;
+      const rr = rOuter + 34 + ((i * 13) % 18);
+      this.drawSparkle(ctx, cx + Math.cos(a) * rr, cy + Math.sin(a) * rr, 5 + (i % 3), 'rgba(34,211,238,0.32)');
     }
 
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '600 31px Inter, system-ui, -apple-system, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillText('Focus and Hydrate', logoX + 82, logoY + 32);
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, rOuter + 22, 0, Math.PI * 2);
+    const glow = ctx.createRadialGradient(cx, cy, rOuter - 36, cx, cy, rOuter + 42);
+    glow.addColorStop(0, 'rgba(34, 211, 238, 0)');
+    glow.addColorStop(0.55, 'rgba(34, 211, 238, 0.045)');
+    glow.addColorStop(1, 'rgba(192, 132, 252, 0.04)');
+    ctx.fillStyle = glow;
+    ctx.fill();
 
-    ctx.fillStyle = '#7f95b8';
-    ctx.font = '400 17px Inter, system-ui, -apple-system, sans-serif';
-    ctx.fillText('Pomodoro + Hidratación consciente', logoX + 82, logoY + 57);
+    const ringGrad = ctx.createLinearGradient(cx - rOuter, cy - rOuter, cx + rOuter, cy + rOuter);
+    ringGrad.addColorStop(0, COL.cyanBright);
+    ringGrad.addColorStop(0.55, COL.cyan);
+    ringGrad.addColorStop(1, COL.purple);
 
-    ctx.fillStyle = '#64748b';
-    ctx.font = '400 17px Inter, system-ui, -apple-system, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('focusandhydrate.com', width / 2, height - 40);
+    ctx.beginPath();
+    ctx.arc(cx, cy, rOuter, 0, Math.PI * 2);
+    ctx.strokeStyle = ringGrad;
+    ctx.lineWidth = 7;
+    ctx.shadowColor = 'rgba(34, 211, 238, 0.14)';
+    ctx.shadowBlur = 10;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, rInner, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(8, 16, 32, 0.94)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(cx - 38, cy + 4);
+    ctx.lineTo(cx - 14, cy + 34);
+    ctx.lineTo(cx + 50, cy - 32);
+    const chk = ctx.createLinearGradient(cx - 42, cy, cx + 54, cy);
+    chk.addColorStop(0, COL.cyan);
+    chk.addColorStop(0.65, '#a5f3fc');
+    chk.addColorStop(1, 'rgba(248,250,252,0.92)');
+    ctx.strokeStyle = chk;
+    ctx.lineWidth = 10;
+    ctx.stroke();
+
+    ctx.restore();
+
+    const ringBottom = cy + rOuter;
+    return ringBottom + 26;
   }
 
-  private roundRect(
+  private drawSparkle(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, fill: string): void {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(Math.PI / 4);
+    ctx.fillStyle = fill;
+    ctx.beginPath();
+    ctx.moveTo(0, -size);
+    ctx.lineTo(size * 0.28, -size * 0.28);
+    ctx.lineTo(size, 0);
+    ctx.lineTo(size * 0.28, size * 0.28);
+    ctx.lineTo(0, size);
+    ctx.lineTo(-size * 0.28, size * 0.28);
+    ctx.lineTo(-size, 0);
+    ctx.lineTo(-size * 0.28, -size * 0.28);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  /** Title, subtitle, optional attribution row. Returns bottom Y below this block (+ trailing gap before stats caller adds). */
+  private drawTitleBlock(
     ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    radius: number
+    _stats: CelebrationStats,
+    titleBaselineY: number,
+    copy: ShareCardCopy
+  ): number {
+    const cx = W / 2;
+    ctx.textBaseline = 'alphabetic';
+    ctx.font = L.titleFont;
+    ctx.textAlign = 'left';
+
+    const partA = copy.titleObjective;
+    const partB = copy.titleDone;
+    const wA = ctx.measureText(partA).width;
+    const wB = ctx.measureText(partB).width;
+    const pairW = wA + wB;
+    let x = cx - pairW / 2;
+
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = COL.white;
+    ctx.fillText(partA, x, titleBaselineY);
+    x += wA;
+
+    const grad = ctx.createLinearGradient(x, titleBaselineY - 48, x + wB, titleBaselineY + 8);
+    grad.addColorStop(0, '#7dd3fc');
+    grad.addColorStop(0.55, COL.cyan);
+    grad.addColorStop(1, '#b794f6');
+    ctx.fillStyle = grad;
+    ctx.fillText(partB, x, titleBaselineY);
+
+    const subBaseline = titleBaselineY + L.gapTitleToSubtitle;
+    ctx.font = L.subtitleFont;
+    const s1 = copy.subtitlePart1;
+    const s2 = copy.subtitlePart2;
+    const wS1 = ctx.measureText(s1).width;
+    const wS2 = ctx.measureText(s2).width;
+    let sx = cx - (wS1 + wS2) / 2;
+
+    ctx.fillStyle = COL.muted;
+    ctx.fillText(s1, sx, subBaseline);
+    sx += wS1;
+    ctx.fillStyle = COL.cyanBright;
+    ctx.fillText(s2, sx, subBaseline);
+
+    let nextY = subBaseline;
+    if (copy.attributionLine) {
+      const attrBaseline = subBaseline + L.gapSubtitleToAttribution;
+      ctx.textAlign = 'center';
+      ctx.font = L.attributionFont;
+      ctx.fillStyle = COL.muted2;
+      ctx.fillText(copy.attributionLine, cx, attrBaseline);
+      nextY = attrBaseline;
+    }
+
+    return nextY + 22;
+  }
+
+  private roundedRectStrokeFill(
+    ctx: CanvasRenderingContext2D,
+    rx: number,
+    ry: number,
+    rw: number,
+    rh: number,
+    r: number,
+    fill: string | CanvasGradient | CanvasPattern,
+    stroke: string,
+    lineW: number
   ): void {
     ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + width - radius, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-    ctx.lineTo(x + width, y + height - radius);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-    ctx.lineTo(x + radius, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.moveTo(rx + r, ry);
+    ctx.lineTo(rx + rw - r, ry);
+    ctx.arcTo(rx + rw, ry, rx + rw, ry + r, r);
+    ctx.lineTo(rx + rw, ry + rh - r);
+    ctx.arcTo(rx + rw, ry + rh, rx + rw - r, ry + rh, r);
+    ctx.lineTo(rx + r, ry + rh);
+    ctx.arcTo(rx, ry + rh, rx, ry + rh - r, r);
+    ctx.lineTo(rx, ry + r);
+    ctx.arcTo(rx, ry, rx + r, ry, r);
     ctx.closePath();
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = lineW;
+    ctx.stroke();
+  }
+
+  private drawStatsCard(ctx: CanvasRenderingContext2D, stats: CelebrationStats, topY: number, copy: ShareCardCopy): number {
+    const pad = L.marginX;
+    const cardW = W - pad * 2;
+    const cardH = L.cardH;
+    const x = pad;
+    const y = topY;
+    const rCard = L.cardRadius;
+
+    this.roundedRectStrokeFill(
+      ctx,
+      x,
+      y,
+      cardW,
+      cardH,
+      rCard,
+      'rgba(10, 18, 36, 0.42)',
+      COL.stroke,
+      1
+    );
+
+    const colW = cardW / 3;
+    const mid1 = x + colW;
+    const mid2 = x + colW * 2;
+    ctx.strokeStyle = 'rgba(100,116,148,0.1)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(mid1, y + 28);
+    ctx.lineTo(mid1, y + cardH - 28);
+    ctx.moveTo(mid2, y + 28);
+    ctx.lineTo(mid2, y + cardH - 28);
+    ctx.stroke();
+
+    const iconY = y + 44;
+
+    const centres = [
+      {
+        xc: x + colW / 2,
+        tasks: stats.tasksCompleted,
+        label: stats.tasksCompleted === 1 ? copy.statsTasksSingular : copy.statsTasksPlural,
+        drawIcon: (): void => this.drawTargetIcon(ctx, x + colW / 2, iconY)
+      },
+      {
+        xc: x + colW + colW / 2,
+        label: copy.statsFocus,
+        drawIcon: (): void => this.drawClockIcon(ctx, x + colW + colW / 2, iconY)
+      },
+      {
+        xc: x + colW * 2 + colW / 2,
+        label: copy.statsProgress,
+        drawIcon: (): void => this.drawTrendIcon(ctx, x + colW * 2 + colW / 2, iconY)
+      }
+    ];
+
+    ctx.textAlign = 'center';
+    centres.forEach((c) => {
+      c.drawIcon();
+    });
+
+    const valueBaseline = y + 118;
+    ctx.font = '800 46px Inter, system-ui, -apple-system, sans-serif';
+    ctx.fillStyle = COL.white;
+    ctx.fillText(String(centres[0].tasks), centres[0].xc, valueBaseline);
+    ctx.fillText(stats.totalFocusTime, centres[1].xc, valueBaseline);
+    ctx.fillText(`${stats.completionPercentage}%`, centres[2].xc, valueBaseline);
+
+    const labelBaseline = y + 146;
+    ctx.font = '600 11px Inter, system-ui, -apple-system, sans-serif';
+    ctx.fillStyle = COL.muted2;
+    ctx.letterSpacing = '0.04em';
+    ctx.fillText(centres[0].label, centres[0].xc, labelBaseline);
+    ctx.fillText(centres[1].label, centres[1].xc, labelBaseline);
+    ctx.fillText(centres[2].label, centres[2].xc, labelBaseline);
+    ctx.letterSpacing = '0';
+
+    return y + cardH;
+  }
+
+  private drawTargetIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number): void {
+    ctx.save();
+    const g = ctx.createLinearGradient(cx - 20, cy - 16, cx + 20, cy + 16);
+    g.addColorStop(0, COL.cyan);
+    g.addColorStop(1, COL.purple);
+    ctx.strokeStyle = g;
+    ctx.lineWidth = 2;
+    for (let rr = 18; rr >= 7; rr -= 11) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, rr, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  private drawClockIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number): void {
+    ctx.strokeStyle = 'rgba(94,239,255,0.85)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx, cy - 14);
+    ctx.lineTo(cx + 8, cy - 2);
+    ctx.stroke();
+  }
+
+  private drawTrendIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number): void {
+    const g = ctx.createLinearGradient(cx - 26, cy, cx + 26, cy);
+    g.addColorStop(0, COL.cyan);
+    g.addColorStop(1, COL.purple);
+    ctx.strokeStyle = g;
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    const y0 = cy + 12;
+    ctx.beginPath();
+    ctx.moveTo(cx - 22, y0 + 2);
+    ctx.lineTo(cx - 8, y0 - 12);
+    ctx.lineTo(cx + 6, y0);
+    ctx.lineTo(cx + 24, y0 - 22);
+    ctx.stroke();
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(cx + 22, y0 - 22);
+    ctx.lineTo(cx + 24, y0 - 14);
+    ctx.lineTo(cx + 16, y0 - 18);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  /** One centered phrase under stats; no bottle divider noise */
+  private drawHydrationMessageCentered(ctx: CanvasRenderingContext2D, topY: number, copy: ShareCardCopy): void {
+    const cx = W / 2;
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'left';
+    ctx.font = L.hydrationFont;
+
+    const lead = copy.hydrationLead;
+    const hi = copy.hydrationHighlight;
+    const wLead = ctx.measureText(lead).width;
+    const wHi = ctx.measureText(hi).width;
+    const midY = topY + 22;
+
+    ctx.shadowBlur = 0;
+    let x = cx - (wLead + wHi) / 2;
+
+    ctx.fillStyle = COL.muted;
+    ctx.fillText(lead, x, midY);
+    x += wLead;
+    ctx.fillStyle = COL.cyan;
+    ctx.fillText(hi, x, midY);
+
+    ctx.textBaseline = 'alphabetic';
+    ctx.textAlign = 'left';
+
+    const tag = copy.hydrationTagline?.trim();
+    if (!tag) {
+      return;
+    }
+    ctx.font = '600 11px Inter, system-ui, -apple-system, sans-serif';
+    ctx.fillStyle = COL.muted2;
+    ctx.textAlign = 'center';
+    ctx.fillText(tag, cx, midY + 36);
+    ctx.textAlign = 'left';
+  }
+
+  /** Centered brand stack above bottom safe zone */
+  private async drawFooterCentered(ctx: CanvasRenderingContext2D, copy: ShareCardCopy, bottomPad: number): Promise<void> {
+    const cx = W / 2;
+
+    try {
+      const logo = await this.loadImage('/images/logo-hydrofocus.png');
+      const logoSize = 36;
+      const logoTop = H - bottomPad - 168;
+      ctx.drawImage(logo, cx - logoSize / 2, logoTop, logoSize, logoSize);
+    } catch {
+      const markY = H - bottomPad - 148;
+      this.drawSparkle(ctx, cx, markY, 10, 'rgba(34,211,238,0.35)');
+    }
+
+    const brandBaseline = H - bottomPad - 118;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.font = '750 28px Inter, system-ui, -apple-system, sans-serif';
+    const partFocus = 'Focus';
+    const partFlow = 'Flow';
+    const focusFlowGap = 10;
+    const wFocus = ctx.measureText(partFocus).width;
+    const wFlow = ctx.measureText(partFlow).width;
+    const pairW = wFocus + focusFlowGap + wFlow;
+    const pairLeft = cx - pairW / 2;
+
+    ctx.fillStyle = COL.white;
+    ctx.textAlign = 'left';
+    ctx.fillText(partFocus, pairLeft, brandBaseline);
+
+    const flowX = pairLeft + wFocus + focusFlowGap;
+    const gFlow = ctx.createLinearGradient(flowX, brandBaseline - 24, flowX + 96, brandBaseline + 8);
+    gFlow.addColorStop(0, COL.cyan);
+    gFlow.addColorStop(1, COL.purple);
+    ctx.fillStyle = gFlow;
+    ctx.fillText(partFlow, flowX, brandBaseline);
+
+    ctx.textAlign = 'center';
+    ctx.font = '500 13px Inter, system-ui, -apple-system, sans-serif';
+    ctx.fillStyle = 'rgba(148, 176, 210, 0.72)';
+    ctx.fillText(copy.footerTagline, cx, brandBaseline + 30);
+
+    const url = 'focusflow-pomodoro.com';
+    ctx.font = '600 18px Inter, system-ui, -apple-system, sans-serif';
+    ctx.fillStyle = 'rgba(186, 210, 238, 0.88)';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(url, cx, H - bottomPad - 42);
+    ctx.textBaseline = 'alphabetic';
+    ctx.textAlign = 'left';
   }
 
   private loadImage(src: string): Promise<HTMLImageElement> {
@@ -225,5 +570,3 @@ export class ImageGeneratorService {
     });
   }
 }
-
-

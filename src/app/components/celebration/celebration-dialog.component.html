@@ -39,17 +39,10 @@
 
     <div class="celebration-actions">
       <p-button
-        [label]="'celebration.shareLinkedIn' | translate"
-        icon="pi pi-linkedin"
-        [loading]="isGeneratingImage"
-        styleClass="celebration-cta celebration-cta--primary"
-        (onClick)="onShareLinkedIn()"
-      />
-      <p-button
         [label]="'celebration.downloadImage' | translate"
         icon="pi pi-download"
-        [loading]="isGeneratingImage"
-        styleClass="celebration-cta celebration-cta--secondary"
+        [loading]="isGeneratingImage()"
+        styleClass="celebration-cta celebration-cta--primary"
         (onClick)="onDownloadImage()"
       />
     </div>

@@ -1,5 +1,5 @@
-import { Component, signal, computed, effect, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, signal, computed, effect, OnDestroy, OnInit, ViewChild, inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WaterBottleComponent } from './components/water-bottle/water-bottle.component';
 import { TaskListComponent } from './components/task-list/task-list.component';
@@ -11,6 +11,7 @@ import { CelebrationStats } from '../../shared/models/celebration.model';
 import { NotificationService } from '../../core/services/notification.service';
 import { HydroFocusDailyService } from '../../core/services/hydrofocus-daily.service';
 import { BrowserTabProgressService } from '../../core/services/browser-tab-progress.service';
+import { MiniTimerPictureInPictureService, MiniTimerViewState } from '../../core/services/mini-timer-picture-in-picture.service';
 import { TimerPersistedState } from '../../shared/models/timer-state.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../core/i18n/language.service';
@@ -47,11 +48,17 @@ interface ShareProfileState {
 export class TimerComponent implements OnDestroy, OnInit {
   @ViewChild(TaskListComponent) taskListComponent!: TaskListComponent;
 
+  private readonly platformId = inject(PLATFORM_ID);
+
   timeRemaining = signal<number>(1500);
   isRunning = signal<boolean>(false);
   currentMode = signal<'focus' | 'break'>('focus');
   /** Cuando arrancó el segmento actual (para recalcular al recargar). */
   private startedAt = signal<number | null>(null);
+  /** Fin absoluto del segmento en curso (epoch ms). Fuente de verdad junto a timeRemaining mientras corre. */
+  private segmentEndsAt = signal<number | null>(null);
+  private visibilityListener: (() => void) | null = null;
+  private pageShowListener: ((ev: Event) => void) | null = null;
 
   timerConfig = signal<TimerConfig>(DEFAULT_TIMER_CONFIG);
   settingsVisible = signal(false);
@@ -75,11 +82,13 @@ export class TimerComponent implements OnDestroy, OnInit {
   private notificationService = inject(NotificationService);
   private dailyService = inject(HydroFocusDailyService);
   private browserTabProgress = inject(BrowserTabProgressService);
+  private miniTimerPip = inject(MiniTimerPictureInPictureService);
   private translate = inject(TranslateService);
   private language = inject(LanguageService);
   sessionsCompleted = computed(() => this.dailyService.completedSessions());
   totalFocusTimeMinutes = computed(() => this.dailyService.totalFocusMinutes());
   transitionTip = this.notificationService.transitionTip;
+  isMiniModeSupported = this.miniTimerPip.isSupported();
 
   private currentSegmentTotalSeconds = computed(() => {
     const config = this.timerConfig();
@@ -90,6 +99,19 @@ export class TimerComponent implements OnDestroy, OnInit {
   timerProgress = computed(() => {
     const total = this.currentSegmentTotalSeconds();
     return total > 0 ? ((total - this.timeRemaining()) / total) * 100 : 0;
+  });
+
+  timerStateClass = computed<Record<string, boolean>>(() => {
+    const mode = this.currentMode();
+    const running = this.isRunning();
+    const idle = !running && this.timeRemaining() === this.currentSegmentTotalSeconds();
+    return {
+      'timer-mode-focus': mode === 'focus',
+      'timer-mode-break': mode === 'break',
+      'timer-running': running,
+      'timer-paused': !running && !idle,
+      'timer-idle': idle
+    };
   });
 
   isBreak = computed(() => this.currentMode() === 'break');
@@ -190,17 +212,28 @@ export class TimerComponent implements OnDestroy, OnInit {
 
     effect(() => {
       const total = this.currentSegmentTotalSeconds();
+      const running = this.isRunning();
+      const endAt = this.segmentEndsAt();
       const state: TimerPersistedState = {
         mode: this.currentMode(),
         remainingSeconds: this.timeRemaining(),
         totalSeconds: total,
-        startedAt: this.isRunning() ? this.startedAt() ?? Date.now() : null,
-        isRunning: this.isRunning(),
+        startedAt: running ? (this.startedAt() ?? Date.now()) : null,
+        segmentEndsAt: running && endAt != null ? endAt : null,
+        isRunning: running,
         lastUpdatedAt: Date.now(),
         hasShownFirstFocusIntro: this.hasShownFirstFocusIntro(),
         hasShownFirstBreakIntro: this.hasShownFirstBreakIntro()
       };
       this.saveTimerState(state);
+    });
+
+    effect(() => {
+      this.language.translationTick();
+      // Leer siempre el estado para que el efecto quede suscripto al mismo source of truth del timer.
+      const miniState = this.getMiniTimerState();
+      if (!this.miniTimerPip.isOpen()) return;
+      this.miniTimerPip.update(miniState);
     });
 
     effect(
@@ -225,6 +258,16 @@ export class TimerComponent implements OnDestroy, OnInit {
     this.loadTimerConfig();
     this.loadShareProfile();
     this.loadTimerState();
+    if (isPlatformBrowser(this.platformId)) {
+      this.visibilityListener = () => {
+        if (document.visibilityState === 'visible') {
+          this.syncWallClockAfterHidden();
+        }
+      };
+      document.addEventListener('visibilitychange', this.visibilityListener);
+      this.pageShowListener = () => this.syncWallClockAfterHidden();
+      window.addEventListener('pageshow', this.pageShowListener);
+    }
   }
 
   private loadTimerConfig(): void {
@@ -327,7 +370,21 @@ export class TimerComponent implements OnDestroy, OnInit {
     this.currentMode.set('focus');
     this.timeRemaining.set(config.focusDuration * 60);
     this.startedAt.set(null);
+    this.segmentEndsAt.set(null);
     this.isRunning.set(false);
+  }
+
+  /** Al volver de background: alinear remaining con segmentEndsAt y completar si ya venció. */
+  private syncWallClockAfterHidden(): void {
+    if (!this.isRunning()) return;
+    const end = this.segmentEndsAt();
+    if (end == null) return;
+    const rem = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+    this.timeRemaining.set(rem);
+    if (rem <= 0) {
+      this.timeRemaining.set(0);
+      this.runTimerCompleteLogic({ completionSource: 'deferred' });
+    }
   }
 
   private loadTimerState(): void {
@@ -341,6 +398,7 @@ export class TimerComponent implements OnDestroy, OnInit {
         this.timeRemaining.set(config.focusDuration * 60);
         this.isRunning.set(false);
         this.startedAt.set(null);
+        this.segmentEndsAt.set(null);
         return;
       }
       const state: TimerPersistedState = JSON.parse(raw);
@@ -358,18 +416,32 @@ export class TimerComponent implements OnDestroy, OnInit {
         || state.mode === 'break' && (state.totalSeconds ?? 0) < totalBreak;
       const effectiveTotal = wasShortConfig ? (state.mode === 'focus' ? totalFocus : totalBreak) : totalToUse;
 
-      if (state.isRunning && state.startedAt != null) {
-        const elapsed = Math.floor((Date.now() - state.startedAt) / 1000);
-        const remaining = Math.max(0, effectiveTotal - elapsed);
-        if (remaining > 0) {
-          this.timeRemaining.set(remaining);
-          this.startedAt.set(state.startedAt);
-          this.isRunning.set(true);
+      if (state.isRunning) {
+        const legacyEnd =
+          state.startedAt != null ? state.startedAt + effectiveTotal * 1000 : null;
+        const endMs =
+          typeof state.segmentEndsAt === 'number' && !Number.isNaN(state.segmentEndsAt)
+            ? state.segmentEndsAt
+            : legacyEnd;
+        if (endMs != null) {
+          const remaining = Math.max(0, Math.ceil((endMs - Date.now()) / 1000));
+          if (remaining > 0) {
+            this.timeRemaining.set(remaining);
+            this.segmentEndsAt.set(endMs);
+            this.startedAt.set(state.startedAt ?? Date.now());
+            this.isRunning.set(true);
+          } else {
+            this.timeRemaining.set(0);
+            this.segmentEndsAt.set(null);
+            this.runTimerCompleteLogic({ completionSource: 'deferred' });
+          }
         } else {
-          // El segmento ya venció en segundo plano: no contabilizar métricas al recargar
-          // (evita avanzar sesión / sumar minutos en cada F5). Queda pausado en 00:00.
-          this.timeRemaining.set(0);
+          const rawRem = state.remainingSeconds ?? effectiveTotal;
+          const clamped = Math.min(Math.max(0, rawRem), effectiveTotal);
+          const saved = wasShortConfig ? effectiveTotal : clamped;
+          this.timeRemaining.set(saved);
           this.startedAt.set(null);
+          this.segmentEndsAt.set(null);
           this.isRunning.set(false);
         }
       } else {
@@ -378,6 +450,7 @@ export class TimerComponent implements OnDestroy, OnInit {
         const saved = wasShortConfig ? effectiveTotal : clamped;
         this.timeRemaining.set(saved);
         this.startedAt.set(null);
+        this.segmentEndsAt.set(null);
         this.isRunning.set(false);
       }
 
@@ -388,14 +461,18 @@ export class TimerComponent implements OnDestroy, OnInit {
       this.timeRemaining.set(this.timerConfig().focusDuration * 60);
       this.isRunning.set(false);
       this.startedAt.set(null);
+      this.segmentEndsAt.set(null);
     }
   }
 
-  private runTimerCompleteLogic(): void {
+  private runTimerCompleteLogic(opts?: { completionSource: 'tick' | 'deferred' }): void {
     this.stopInterval();
     this.isRunning.set(false);
     this.startedAt.set(null);
+    this.segmentEndsAt.set(null);
     const config = this.timerConfig();
+    const deferred = opts?.completionSource === 'deferred';
+    const notifyOpts = deferred ? { fromDeferredDetection: true as const } : undefined;
 
     if (this.currentMode() === 'focus') {
       this.dailyService.addFocusMinutes(config.focusDuration);
@@ -405,19 +482,26 @@ export class TimerComponent implements OnDestroy, OnInit {
         this.translate.instant('browserTab.goodBlock', { count: completed }),
         3600
       );
-      this.notificationService.notifyFocusSessionCompleted();
+      void this.notificationService.notifyFocusSessionCompleted(notifyOpts);
       const isLong = completed > 0 && completed % config.sessionsUntilLongBreak === 0;
-      this.currentMode.set('break');
-      this.timeRemaining.set((isLong ? config.longBreakDuration : config.breakDuration) * 60);
+      this.startSegment('break', (isLong ? config.longBreakDuration : config.breakDuration) * 60);
     } else {
       this.browserTabProgress.showTemporaryTitle(
         this.translate.instant('browserTab.backToFocus', { count: this.sessionsCompleted() }),
         3200
       );
-      this.notificationService.notifyBreakCompleted();
-      this.currentMode.set('focus');
-      this.timeRemaining.set(config.focusDuration * 60);
+      void this.notificationService.notifyBreakCompleted(notifyOpts);
+      this.startSegment('focus', config.focusDuration * 60);
     }
+  }
+
+  private startSegment(mode: 'focus' | 'break', seconds: number): void {
+    this.currentMode.set(mode);
+    this.timeRemaining.set(seconds);
+    const now = Date.now();
+    this.startedAt.set(now);
+    this.segmentEndsAt.set(now + seconds * 1000);
+    this.isRunning.set(true);
   }
 
   private saveTimerState(state: TimerPersistedState): void {
@@ -431,17 +515,42 @@ export class TimerComponent implements OnDestroy, OnInit {
   ngOnDestroy(): void {
     this.stopInterval();
     this.browserTabProgress.reset();
+    this.miniTimerPip.close();
+    if (isPlatformBrowser(this.platformId) && this.visibilityListener) {
+      document.removeEventListener('visibilitychange', this.visibilityListener);
+      this.visibilityListener = null;
+    }
+    if (isPlatformBrowser(this.platformId) && this.pageShowListener) {
+      window.removeEventListener('pageshow', this.pageShowListener);
+      this.pageShowListener = null;
+    }
+  }
+
+  async openMiniMode(): Promise<void> {
+    if (!this.isMiniModeSupported) return;
+    await this.miniTimerPip.open(this.getMiniTimerState(), {
+      onToggleRun: () => this.toggleTimer(),
+      onSwitchSegment: () => this.requestSkipToBreak(),
+      onClose: () => {
+        // no-op: el estado real vive en este componente
+      }
+    });
   }
 
   private startInterval(): void {
     this.stopInterval();
     if (this.startedAt() == null) this.startedAt.set(Date.now());
+    if (this.isRunning() && this.segmentEndsAt() == null && this.timeRemaining() > 0) {
+      this.segmentEndsAt.set(Date.now() + this.timeRemaining() * 1000);
+    }
     this.intervalId = window.setInterval(() => {
-      const current = this.timeRemaining();
-      if (current > 0) {
-        this.timeRemaining.set(current - 1);
-      } else {
-        this.runTimerCompleteLogic();
+      const end = this.segmentEndsAt();
+      if (end == null) return;
+      const rem = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+      this.timeRemaining.set(rem);
+      if (rem <= 0) {
+        this.timeRemaining.set(0);
+        this.runTimerCompleteLogic({ completionSource: 'tick' });
       }
     }, 1000);
   }
@@ -456,7 +565,8 @@ export class TimerComponent implements OnDestroy, OnInit {
   private onTimerComplete(): void {
     this.stopInterval();
     this.startedAt.set(null);
-    this.runTimerCompleteLogic();
+    this.segmentEndsAt.set(null);
+    this.runTimerCompleteLogic({ completionSource: 'tick' });
   }
 
   formatTime(seconds: number): string {
@@ -474,13 +584,16 @@ export class TimerComponent implements OnDestroy, OnInit {
       if (isFirstFocus) this.hasShownFirstFocusIntro.set(true);
       if (isFirstBreak) this.hasShownFirstBreakIntro.set(true);
     }
-    this.startedAt.set(Date.now());
+    const now = Date.now();
+    this.startedAt.set(now);
+    this.segmentEndsAt.set(now + this.timeRemaining() * 1000);
     this.isRunning.set(true);
   }
 
   pauseTimer(): void {
     this.isRunning.set(false);
     this.startedAt.set(null);
+    this.segmentEndsAt.set(null);
   }
 
   toggleTimer(): void {
@@ -495,6 +608,7 @@ export class TimerComponent implements OnDestroy, OnInit {
   resetTimer(): void {
     this.isRunning.set(false);
     this.startedAt.set(null);
+    this.segmentEndsAt.set(null);
     this.timeRemaining.set(this.getTargetSecondsForCurrentMode());
   }
 
@@ -532,21 +646,15 @@ export class TimerComponent implements OnDestroy, OnInit {
   private doSkipToBreak(): void {
     this.isRunning.set(false);
     this.startedAt.set(null);
-    if (this.dailyService.completedSessions() === 0) {
-      const config = this.timerConfig();
-      this.currentMode.set('focus');
-      this.timeRemaining.set(config.focusDuration * 60);
-      return;
-    }
-    this.currentMode.set('break');
-    this.timeRemaining.set(this.timerConfig().breakDuration * 60);
+    this.segmentEndsAt.set(null);
+    this.startSegment('break', this.timerConfig().breakDuration * 60);
   }
 
   private doSkipToFocus(): void {
     this.isRunning.set(false);
     this.startedAt.set(null);
-    this.currentMode.set('focus');
-    this.timeRemaining.set(this.timerConfig().focusDuration * 60);
+    this.segmentEndsAt.set(null);
+    this.startSegment('focus', this.timerConfig().focusDuration * 60);
   }
 
   onCelebrationReached(stats: CelebrationStats): void {
@@ -602,6 +710,7 @@ export class TimerComponent implements OnDestroy, OnInit {
       remainingSeconds: this.timeRemaining(),
       totalSeconds: this.currentSegmentTotalSeconds(),
       startedAt: null,
+      segmentEndsAt: null,
       isRunning: false,
       lastUpdatedAt: Date.now(),
       hasShownFirstFocusIntro: this.hasShownFirstFocusIntro(),
@@ -723,6 +832,27 @@ export class TimerComponent implements OnDestroy, OnInit {
 
   dismissTransitionTip(): void {
     this.notificationService.dismissTransitionTip();
+  }
+
+  private getMiniTimerState(): MiniTimerViewState {
+    const mode = this.currentMode();
+    const modeLabel = mode === 'focus'
+      ? this.t('timer.focus')
+      : (this.isLongBreak() ? this.t('timer.longBreak') : this.t('timer.break'));
+    const sessionNumber = this.sessionsCompleted() + 1;
+    const sessionText = this.t('timer.sessionLabel', { value: sessionNumber });
+    return {
+      appName: 'FocusFlow',
+      modeLabel,
+      mode,
+      remainingTime: this.formatTime(this.timeRemaining()),
+      sessionLabel: `${sessionText} · ${modeLabel}`,
+      isRunning: this.isRunning(),
+      canSwitchSegment: true,
+      switchSegmentLabel: mode === 'focus' ? this.t('timer.rest') : this.t('timer.back'),
+      primaryActionLabel: this.mainButtonLabel(),
+      closeLabel: this.t('common.close')
+    };
   }
 
   private t(key: string, params?: Record<string, unknown>): string {

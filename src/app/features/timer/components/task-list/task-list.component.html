@@ -1,7 +1,7 @@
-<div class="flex h-full min-h-0 flex-col gap-3 overflow-hidden">
+<div class="flex h-auto min-h-0 flex-col gap-3 overflow-visible lg:h-full lg:overflow-hidden">
   <app-quick-stats [stats]="stats()" />
 
-  <div class="relative isolate flex min-h-0 flex-1 flex-col gap-2 overflow-hidden">
+  <div class="relative isolate flex min-h-0 flex-col gap-2 overflow-visible lg:flex-1 lg:overflow-hidden">
     <div
       aria-hidden="true"
       class="pointer-events-none absolute -right-[78px] top-[130px] -z-10 h-[250px] w-[250px] bg-[url('/images/dashboard.svg')] bg-contain bg-center bg-no-repeat opacity-70 max-lg:opacity-45 max-md:hidden"
@@ -28,7 +28,8 @@
       <input
         type="text"
         pInputText
-        [(ngModel)]="newTask"
+        [ngModel]="newTask()"
+        (ngModelChange)="onNewTaskChange($event)"
         (keydown)="onKeyDown($event)"
         [placeholder]="'tasks.inputPlaceholder' | translate"
         class="task-input w-full"
@@ -36,14 +37,15 @@
       <button
         type="button"
         (click)="addTask()"
-        class="inline-flex h-12 sm:h-14 w-[48px] sm:w-[52px] items-center justify-center rounded-xl sm:rounded-2xl border border-[rgba(165,255,227,0.32)] bg-[linear-gradient(180deg,#63f0cd_0%,#49d9b8_100%)] text-[#053429] shadow-[0_8px_16px_rgba(60,221,176,0.14)] transition-all duration-200 hover:bg-[linear-gradient(180deg,#76f4d6_0%,#54dfc0_100%)] hover:shadow-[0_10px_20px_rgba(60,221,176,0.18)]"
-        aria-label="Agregar tarea"
+        class="add-task-btn"
+        [disabled]="!canAddTask()"
+        [attr.aria-label]="'tasks.addTask' | translate"
       >
         <span class="pi pi-plus" aria-hidden="true"></span>
       </button>
     </div>
 
-    <div class="task-scroll flex-1 min-h-0 overflow-y-auto pr-1">
+    <div class="task-scroll min-h-0 pr-1 max-lg:overflow-visible lg:flex-1 lg:min-h-0 lg:overflow-y-auto">
       @if (tasks().length === 0) {
         <div class="text-center py-8 text-slate-400">
           <p class="text-sm font-medium">{{ 'tasks.emptyTitle' | translate }}</p>
@@ -58,34 +60,39 @@
                 class="group relative mb-2 flex min-h-14 items-center justify-between gap-[11px] overflow-hidden rounded-xl border border-[rgba(91,112,151,0.22)] bg-[linear-gradient(180deg,rgba(9,16,31,0.94)_0%,rgba(7,13,24,0.98)_100%)] px-[14px] transition-all duration-150 hover:border-[rgba(110,155,234,0.32)] hover:bg-[linear-gradient(180deg,rgba(11,19,35,0.96)_0%,rgba(8,15,28,0.99)_100%)]"
                 [ngClass]="pendingDeleteTaskId() === task.id ? 'border-[rgba(52,211,153,0.35)] before:absolute before:inset-0 before:rounded-[inherit] before:bg-[linear-gradient(90deg,transparent_0%,transparent_34%,rgba(16,185,129,0.07)_52%,rgba(16,185,129,0.2)_88%,rgba(16,185,129,0.26)_100%)] before:pointer-events-none' : ''"
               >
-                <div class="task-checkbox-wrap relative z-[1] shrink-0 leading-none">
-                  <p-checkbox
-                    [inputId]="'task-' + task.id"
-                    [binary]="true"
-                    [ngModel]="task.completed"
-                    (ngModelChange)="toggleTaskCompletion(task.id, $event)"
-                    styleClass="task-p-checkbox"
-                  />
-                </div>
                 <span class="relative z-[1] flex-1 text-[14.5px] font-[550] leading-[1.4] tracking-[0.003em] text-[rgba(236,242,255,0.9)]">{{ task.text }}</span>
                 @if (pendingDeleteTaskId() === task.id) {
                   <span class="relative z-[1] max-w-28 shrink-0 text-right text-[10.5px] font-semibold uppercase leading-[1.2] tracking-[0.04em] text-[rgba(167,243,208,0.92)] max-[400px]:hidden" aria-live="polite">{{ 'tasks.delete' | translate }}</span>
                 }
-                <button
-                  type="button"
-                  (click)="onDeleteButtonClick(task, $event)"
-                  class="relative z-[1] inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg border border-transparent text-[rgba(248,113,113,0.82)] opacity-0 transition-all duration-200 group-hover:opacity-90 hover:bg-[rgba(239,68,68,0.12)]"
-                  [ngClass]="pendingDeleteTaskId() === task.id ? '!opacity-100 !text-[#4ade80] border-[rgba(74,222,128,0.45)] bg-[rgba(74,222,128,0.1)] hover:bg-[rgba(74,222,128,0.18)] hover:border-[rgba(74,222,128,0.6)]' : ''"
-                  [attr.aria-label]="
-                    pendingDeleteTaskId() === task.id ? 'Confirmar eliminación de la tarea' : 'Eliminar tarea'
-                  "
-                >
-                  @if (pendingDeleteTaskId() === task.id) {
-                    <span class="pi pi-check" aria-hidden="true"></span>
-                  } @else {
-                    <span class="pi pi-trash" aria-hidden="true"></span>
+                <div class="task-actions relative z-[1]">
+                  @if (pendingDeleteTaskId() !== task.id) {
+                    <button
+                      type="button"
+                      class="task-action-btn task-complete-btn"
+                      (click)="toggleTaskCompletion(task.id, true)"
+                      [pTooltip]="'tasks.complete' | translate"
+                      tooltipPosition="top"
+                      [attr.aria-label]="'tasks.complete' | translate"
+                    >
+                      <span class="pi pi-check" aria-hidden="true"></span>
+                    </button>
                   }
-                </button>
+                  <button
+                    type="button"
+                    (click)="onDeleteButtonClick(task, $event)"
+                    class="task-action-btn task-delete-btn"
+                    [ngClass]="pendingDeleteTaskId() === task.id ? '!opacity-100 !text-[#4ade80] border-[rgba(74,222,128,0.45)] bg-[rgba(74,222,128,0.1)] hover:bg-[rgba(74,222,128,0.18)] hover:border-[rgba(74,222,128,0.6)]' : ''"
+                    [attr.aria-label]="
+                      pendingDeleteTaskId() === task.id ? 'Confirmar eliminación de la tarea' : 'Eliminar tarea'
+                    "
+                  >
+                    @if (pendingDeleteTaskId() === task.id) {
+                      <span class="pi pi-check" aria-hidden="true"></span>
+                    } @else {
+                      <span class="pi pi-trash" aria-hidden="true"></span>
+                    }
+                  </button>
+                </div>
               </div>
             }
           </div>
@@ -98,34 +105,39 @@
                 class="group relative mb-2 flex min-h-14 items-center justify-between gap-[11px] overflow-hidden rounded-xl border border-[rgba(90,111,145,0.22)] bg-[linear-gradient(180deg,rgba(8,14,27,0.9)_0%,rgba(6,11,20,0.95)_100%)] px-[14px] transition-all duration-150 hover:border-[rgba(110,155,234,0.32)]"
                 [ngClass]="pendingDeleteTaskId() === task.id ? 'border-[rgba(52,211,153,0.35)] before:absolute before:inset-0 before:rounded-[inherit] before:bg-[linear-gradient(90deg,transparent_0%,transparent_34%,rgba(16,185,129,0.07)_52%,rgba(16,185,129,0.2)_88%,rgba(16,185,129,0.26)_100%)] before:pointer-events-none' : ''"
               >
-                <div class="task-checkbox-wrap relative z-[1] shrink-0 leading-none">
-                  <p-checkbox
-                    [inputId]="'task-' + task.id"
-                    [binary]="true"
-                    [ngModel]="task.completed"
-                    (ngModelChange)="toggleTaskCompletion(task.id, $event)"
-                    styleClass="task-p-checkbox"
-                  />
-                </div>
                 <span class="relative z-[1] flex-1 text-[14.5px] font-medium leading-[1.4] tracking-[0.003em] text-[rgba(169,182,205,0.62)] line-through [text-decoration-color:rgba(169,182,205,0.42)] [text-decoration-thickness:1.3px]">{{ task.text }}</span>
                 @if (pendingDeleteTaskId() === task.id) {
                   <span class="relative z-[1] max-w-28 shrink-0 text-right text-[10.5px] font-semibold uppercase leading-[1.2] tracking-[0.04em] text-[rgba(167,243,208,0.92)] max-[400px]:hidden" aria-live="polite">{{ 'tasks.delete' | translate }}</span>
                 }
-                <button
-                  type="button"
-                  (click)="onDeleteButtonClick(task, $event)"
-                  class="relative z-[1] inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg border border-transparent text-[rgba(248,113,113,0.82)] opacity-0 transition-all duration-200 group-hover:opacity-90 hover:bg-[rgba(239,68,68,0.12)]"
-                  [ngClass]="pendingDeleteTaskId() === task.id ? '!opacity-100 !text-[#4ade80] border-[rgba(74,222,128,0.45)] bg-[rgba(74,222,128,0.1)] hover:bg-[rgba(74,222,128,0.18)] hover:border-[rgba(74,222,128,0.6)]' : ''"
-                  [attr.aria-label]="
-                    pendingDeleteTaskId() === task.id ? 'Confirmar eliminación de la tarea' : 'Eliminar tarea'
-                  "
-                >
-                  @if (pendingDeleteTaskId() === task.id) {
-                    <span class="pi pi-check" aria-hidden="true"></span>
-                  } @else {
-                    <span class="pi pi-trash" aria-hidden="true"></span>
+                <div class="task-actions relative z-[1]">
+                  @if (pendingDeleteTaskId() !== task.id) {
+                    <button
+                      type="button"
+                      class="task-action-btn task-complete-btn task-complete-btn-done"
+                      (click)="toggleTaskCompletion(task.id, false)"
+                      [pTooltip]="'tasks.markPending' | translate"
+                      tooltipPosition="top"
+                      [attr.aria-label]="'tasks.markPending' | translate"
+                    >
+                      <span class="pi pi-check" aria-hidden="true"></span>
+                    </button>
                   }
-                </button>
+                  <button
+                    type="button"
+                    (click)="onDeleteButtonClick(task, $event)"
+                    class="task-action-btn task-delete-btn"
+                    [ngClass]="pendingDeleteTaskId() === task.id ? '!opacity-100 !text-[#4ade80] border-[rgba(74,222,128,0.45)] bg-[rgba(74,222,128,0.1)] hover:bg-[rgba(74,222,128,0.18)] hover:border-[rgba(74,222,128,0.6)]' : ''"
+                    [attr.aria-label]="
+                      pendingDeleteTaskId() === task.id ? 'Confirmar eliminación de la tarea' : 'Eliminar tarea'
+                    "
+                  >
+                    @if (pendingDeleteTaskId() === task.id) {
+                      <span class="pi pi-check" aria-hidden="true"></span>
+                    } @else {
+                      <span class="pi pi-trash" aria-hidden="true"></span>
+                    }
+                  </button>
+                </div>
               </div>
             }
           </div>

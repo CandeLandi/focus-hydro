@@ -2,8 +2,8 @@ import { Component, computed, effect, output, signal, inject, DestroyRef } from 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
-import { CheckboxModule } from 'primeng/checkbox';
 import { ButtonModule } from 'primeng/button';
+import { TooltipModule } from 'primeng/tooltip';
 import { QuickStatsComponent, StatCard } from '../../../../components/shared/quick-stats/quick-stats.component';
 import { CelebrationStats } from '../../../../shared/models/celebration.model';
 import { HydroFocusDailyService } from '../../../../core/services/hydrofocus-daily.service';
@@ -14,10 +14,10 @@ import { LanguageService } from '../../../../core/i18n/language.service';
 @Component({
   selector: 'app-task-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, InputTextModule, CheckboxModule, ButtonModule, QuickStatsComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, InputTextModule, ButtonModule, TooltipModule, QuickStatsComponent],
   templateUrl: './task-list.component.html',
   styleUrl: './task-list.component.css',
-  host: { class: 'block h-full' }
+  host: { class: 'block h-auto min-h-0 lg:h-full' }
 })
 export class TaskListComponent {
   private dailyService = inject(HydroFocusDailyService);
@@ -28,7 +28,7 @@ export class TaskListComponent {
   completedSessions = this.dailyService.completedSessions;
   totalFocusMinutes = this.dailyService.totalFocusMinutes;
 
-  newTask = '';
+  newTask = signal('');
   celebrationReached = output<CelebrationStats>();
   shareSummaryRequest = output<CelebrationStats>();
   /** Primera pulsación: muestra ✓ en el botón; segunda: elimina. */
@@ -53,6 +53,7 @@ export class TaskListComponent {
 
   pendingTasks = computed(() => this.tasks().filter(t => !t.completed));
   doneTasks = computed(() => this.tasks().filter(t => t.completed));
+  canAddTask = computed(() => this.newTask().trim().length > 0);
 
   stats = computed<StatCard[]>(() => {
     this.language.currentLanguage();
@@ -117,7 +118,7 @@ export class TaskListComponent {
   }
 
   addTask(): void {
-    const text = this.newTask.trim();
+    const text = this.newTask().trim();
     if (!text) return;
     const task: HydroTask = {
       id: Date.now().toString(),
@@ -126,7 +127,7 @@ export class TaskListComponent {
       createdAt: Date.now()
     };
     this.dailyService.addTask(task);
-    this.newTask = '';
+    this.newTask.set('');
   }
 
   toggleTaskCompletion(taskId: string, completed: boolean): void {
@@ -165,6 +166,10 @@ export class TaskListComponent {
 
   onKeyDown(e: KeyboardEvent): void {
     if (e.key === 'Enter') this.addTask();
+  }
+
+  onNewTaskChange(value: string): void {
+    this.newTask.set(value);
   }
 
   private formatFocusTime(minutes: number): string {

@@ -1,4 +1,13 @@
-import { Component, Input, Output, EventEmitter, OnInit, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  ViewEncapsulation,
+  inject,
+  signal
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -20,45 +29,30 @@ export class CelebrationDialogComponent implements OnInit {
   @Output() visibleChange = new EventEmitter<boolean>();
   @Output() closeDayRequest = new EventEmitter<void>();
 
-  isGeneratingImage = false;
+  readonly isGeneratingImage = signal(false);
 
-  constructor(private imageGenerator: ImageGeneratorService) {}
+  private readonly imageGenerator = inject(ImageGeneratorService);
 
   ngOnInit(): void {
-    // Validar que las estadísticas estén presentes
     if (!this.stats) {
-      console.error('[Focus and Hydrate] No se proporcionaron estadísticas para el diálogo de celebración');
+      console.error('[FocusFlow] No se proporcionaron estadísticas para el diálogo de celebración');
     }
+  }
+
+  private resolveAchievementFilename(): string {
+    return `focusflow-logro-${new Date().toISOString().split('T')[0]}.png`;
   }
 
   async onDownloadImage(): Promise<void> {
     if (!this.stats) return;
-    this.isGeneratingImage = true;
+    this.isGeneratingImage.set(true);
     try {
       const imageUrl = await this.imageGenerator.generateLinkedInImage(this.stats);
-      const filename = `focus-and-hydrate-logro-${new Date().toISOString().split('T')[0]}.png`;
-      this.imageGenerator.downloadImage(imageUrl, filename);
+      this.imageGenerator.downloadImage(imageUrl, this.resolveAchievementFilename());
     } catch (error) {
-      console.error('[Focus and Hydrate] Error al generar la imagen:', error);
+      console.error('[FocusFlow] Error al generar la imagen:', error);
     } finally {
-      this.isGeneratingImage = false;
-    }
-  }
-
-  async onShareLinkedIn(): Promise<void> {
-    if (!this.stats) return;
-    this.isGeneratingImage = true;
-    try {
-      const imageUrl = await this.imageGenerator.generateLinkedInImage(this.stats);
-      const filename = `focus-and-hydrate-logro-${new Date().toISOString().split('T')[0]}.png`;
-      this.imageGenerator.downloadImage(imageUrl, filename);
-      const text = this.imageGenerator.getSuggestedPostText(this.stats);
-      await navigator.clipboard.writeText(text);
-      window.open('https://www.linkedin.com/feed/', '_blank', 'noopener,noreferrer');
-    } catch (error) {
-      console.error('[Focus and Hydrate] Error al compartir:', error);
-    } finally {
-      this.isGeneratingImage = false;
+      this.isGeneratingImage.set(false);
     }
   }
 
@@ -71,6 +65,3 @@ export class CelebrationDialogComponent implements OnInit {
     this.closeDayRequest.emit();
   }
 }
-
-
-

@@ -15,18 +15,29 @@
   baseZIndex="11000"
 >
   <ng-template pTemplate="header">
-    <div class="hydro-dialog-title-row">
-      <div
-        class="hydro-dialog-icon"
-        [class.hydro-dialog-icon-emerald]="isBreak()"
-        [class.hydro-dialog-icon-cyan]="!isBreak()"
+    <div class="hydro-dialog-title-row session-intro-header">
+      <div class="hydro-dialog-title-row">
+        <div
+          class="hydro-dialog-icon"
+          [class.hydro-dialog-icon-emerald]="isBreak()"
+          [class.hydro-dialog-icon-cyan]="!isBreak()"
+        >
+          <span class="pi text-lg" [ngClass]="isBreak() ? 'pi-glass' : 'pi-bolt'"></span>
+        </div>
+        <div class="min-w-0">
+          <h3 class="hydro-dialog-title">{{ isBreak() ? ('timer.introBreakTitle' | translate) : ('timer.introFocusTitle' | translate) }}</h3>
+          <p class="hydro-dialog-subtitle">{{ isBreak() ? ('timer.introBreakSubtitle' | translate) : ('timer.introFocusSubtitle' | translate:{ minutes: timerConfig().focusDuration }) }}</p>
+        </div>
+      </div>
+      <button
+        type="button"
+        class="hydro-dialog-icon-action hydro-dialog-icon-action-confirm"
+        (click)="closeSessionIntro()"
+        [attr.aria-label]="'timer.introContinue' | translate"
+        [title]="'timer.introContinue' | translate"
       >
-        <span class="pi text-lg" [ngClass]="isBreak() ? 'pi-glass' : 'pi-bolt'"></span>
-      </div>
-      <div class="min-w-0">
-        <h3 class="hydro-dialog-title">{{ isBreak() ? ('timer.introBreakTitle' | translate) : ('timer.introFocusTitle' | translate) }}</h3>
-        <p class="hydro-dialog-subtitle">{{ isBreak() ? ('timer.introBreakSubtitle' | translate) : ('timer.introFocusSubtitle' | translate:{ minutes: timerConfig().focusDuration }) }}</p>
-      </div>
+        <span class="pi pi-check" aria-hidden="true"></span>
+      </button>
     </div>
   </ng-template>
   <div class="hydro-dialog-body">
@@ -40,11 +51,6 @@
       </p>
     }
   </div>
-  <ng-template pTemplate="footer">
-    <div class="hydro-dialog-footer-actions hydro-dialog-footer-single">
-      <p-button [label]="'timer.introContinue' | translate" (onClick)="closeSessionIntro()" styleClass="hydro-dialog-btn-primary" />
-    </div>
-  </ng-template>
 </p-dialog>
 
 <!-- Confirmación: pasar al descanso sin completar el bloque de foco (sin header: solo texto + botones) -->
@@ -92,7 +98,15 @@
 >
   <ng-template pTemplate="header">
     <div class="hydro-dialog-title-row share-name-header">
-      <h3 class="hydro-dialog-title min-w-0">{{ 'share.nameDialogTitle' | translate }}</h3>
+      <div class="hydro-dialog-title-row min-w-0">
+        <div class="hydro-dialog-icon hydro-dialog-icon-cyan">
+          <span class="pi pi-user-edit"></span>
+        </div>
+        <div class="min-w-0">
+          <h3 class="hydro-dialog-title" id="share-name-dialog-title">{{ 'share.nameDialogTitle' | translate }}</h3>
+          <p class="hydro-dialog-subtitle">{{ 'share.nameDialogSubtitle' | translate }}</p>
+        </div>
+      </div>
       <div class="pomodoro-settings-header-actions">
         <button
           type="button"
@@ -116,7 +130,7 @@
     </div>
   </ng-template>
   <div class="hydro-dialog-body">
-    <label class="share-name-field" for="share-name-input">
+    <div class="share-name-field">
       <input
         id="share-name-input"
         type="text"
@@ -124,10 +138,11 @@
         [value]="shareNameInput()"
         (input)="onShareNameInput($any($event.target).value)"
         class="share-name-input"
-        [attr.aria-label]="'share.nameLabel' | translate"
+        aria-labelledby="share-name-dialog-title"
         [placeholder]="'share.namePlaceholder' | translate"
       />
-    </label>
+    </div>
+    <p class="share-name-hint">{{ 'share.nameHint' | translate }}</p>
     @if (shareNameError()) {
       <p class="share-name-error">{{ shareNameError() }}</p>
     }
@@ -178,7 +193,7 @@
   </ng-template>
 
   <div class="hydro-dialog-body">
-    <div class="mb-3 flex flex-wrap items-center gap-2">
+    <div class="pomodoro-preset-row">
       <button type="button" class="pomodoro-preset-chip" (click)="applyPomodoroPreset(25, 5)">{{ 'timer.presetClassic' | translate }}</button>
       <button type="button" class="pomodoro-preset-chip" (click)="applyPomodoroPreset(50, 10)">{{ 'timer.presetDeep' | translate }}</button>
       <button type="button" class="pomodoro-preset-chip" (click)="applyPomodoroPreset(90, 15)">{{ 'timer.presetExtended' | translate }}</button>
@@ -186,7 +201,10 @@
 
     <div class="pomodoro-settings-grid">
       <label class="pomodoro-settings-field">
-        <span>{{ 'timer.settingsFocus' | translate }}</span>
+        <div class="pomodoro-settings-field-head">
+          <span class="pomodoro-settings-label">{{ 'timer.settingsFocus' | translate }}</span>
+          <span class="pomodoro-settings-unit">{{ 'timer.minutes' | translate }}</span>
+        </div>
         <p-inputNumber
           [ngModel]="settingsFocusMinutes()"
           (ngModelChange)="onSettingsFocusInput($event)"
@@ -199,10 +217,12 @@
           decrementButtonIcon="pi pi-chevron-down"
           class="pomodoro-settings-input"
         />
-        <span class="pomodoro-settings-unit">{{ 'timer.minutes' | translate }}</span>
       </label>
       <label class="pomodoro-settings-field">
-        <span>{{ 'timer.settingsBreak' | translate }}</span>
+        <div class="pomodoro-settings-field-head">
+          <span class="pomodoro-settings-label">{{ 'timer.settingsBreak' | translate }}</span>
+          <span class="pomodoro-settings-unit">{{ 'timer.minutes' | translate }}</span>
+        </div>
         <p-inputNumber
           [ngModel]="settingsBreakMinutes()"
           (ngModelChange)="onSettingsBreakInput($event)"
@@ -215,7 +235,6 @@
           decrementButtonIcon="pi pi-chevron-down"
           class="pomodoro-settings-input"
         />
-        <span class="pomodoro-settings-unit">{{ 'timer.minutes' | translate }}</span>
       </label>
     </div>
 
@@ -271,11 +290,11 @@
   </ng-template>
 </p-dialog>
 
-<div class="flex flex-col lg:flex-row gap-3 sm:gap-4 lg:gap-5 h-auto lg:h-full min-h-0">
+<div class="flex flex-col lg:flex-row gap-3 sm:gap-4 lg:gap-5 h-auto min-h-0 lg:h-full">
   <!-- Izquierda: botella + timer + controles -->
-  <div class="flex flex-col lg:w-1/2 h-auto lg:h-full min-h-0">
-    <div class="timer-card hydro-panel flex flex-col h-auto lg:h-full min-h-0" [class.timer-card-active]="isRunning()">
-      <div class="flex flex-col items-center justify-center gap-1 sm:gap-2 lg:flex-1 w-full min-h-0">
+  <div class="flex flex-col w-full lg:w-1/2 h-auto min-h-0 lg:h-full">
+    <div class="timer-card hydro-panel mobile-full-height-card flex flex-col h-full min-h-0" [ngClass]="timerStateClass()">
+      <div class="timer-main-content flex flex-col items-center justify-start gap-1 sm:gap-2 flex-1 min-h-0 w-full overflow-hidden lg:overflow-visible">
         <div class="session-label shrink-0 w-full flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-center">
           <span class="session-dot" [class.session-dot-pulse]="isRunning()"></span>
           <span>
@@ -287,16 +306,36 @@
             </button>
           }
         </div>
-        <div class="pomodoro-config-row">
+        <div class="timer-secondary-toolbar">
           <button type="button" class="pomodoro-config-chip" (click)="openSettingsDialog()">
-            <span class="pi pi-clock"></span>
-            <span>{{ 'timer.pomodoroChip' | translate:{ focus: timerConfig().focusDuration, break: timerConfig().breakDuration } }}</span>
+            <span class="pi pi-sliders-h"></span>
+            <span>{{ 'timer.settingsChip' | translate }}</span>
+          </button>
+          <span class="timer-secondary-divider" aria-hidden="true"></span>
+          <button
+            type="button"
+            class="mini-mode-chip"
+            [disabled]="!isMiniModeSupported"
+            [attr.aria-label]="'timer.miniViewTitle' | translate"
+            [attr.title]="isMiniModeSupported ? ('timer.miniViewTitle' | translate) : ('timer.miniModeUnsupported' | translate)"
+            (click)="openMiniMode()"
+          >
+            <span class="pi pi-window-maximize" aria-hidden="true"></span>
+            <span>{{ 'timer.miniView' | translate }}</span>
           </button>
         </div>
+        @if (!isMiniModeSupported) {
+          <p class="mini-mode-hint">
+            {{ 'timer.miniModeUnsupported' | translate }}
+          </p>
+        }
+        <p class="timer-mobile-alerts-hint" role="note">
+          {{ 'timer.mobileAlertsHint' | translate }}
+        </p>
 
         <!-- Botella + halos -->
-        <div class="flex min-h-[220px] sm:min-h-[260px] lg:min-h-[340px] lg:flex-1 justify-center items-center w-full bottle-stage">
-          <div class="h-[clamp(220px,42vh,360px)] sm:h-[clamp(260px,44vh,420px)] lg:h-full aspect-[7/10] w-auto max-w-full bottle-container">
+        <div class="flex flex-1 min-h-0 sm:min-h-[240px] lg:min-h-[340px] lg:flex-1 justify-center items-center w-full bottle-stage">
+          <div class="h-[clamp(140px,22svh,240px)] sm:h-[clamp(220px,32vh,360px)] lg:h-full aspect-[7/10] w-auto max-w-full bottle-container">
             <app-water-bottle [progress]="timerProgress()" [isBreak]="isBreak()" />
           </div>
         </div>
@@ -313,11 +352,11 @@
           <span class="pi pi-refresh"></span>
           <span class="timer-btn-text">{{ 'timer.reset' | translate }}</span>
         </button>
-        <button type="button" (click)="toggleTimer()" class="timer-btn timer-btn-primary">
+        <button type="button" (click)="toggleTimer()" class="timer-btn timer-btn-primary" [class.timer-btn-active]="isRunning()">
           <span [ngClass]="isRunning() ? 'pi pi-pause' : 'pi pi-play'"></span>
           <span class="timer-btn-text">{{ mainButtonLabel() }}</span>
         </button>
-        <button type="button" (click)="requestSkipToBreak()" class="timer-btn timer-btn-secondary timer-btn-break" [attr.title]="currentMode() === 'focus' ? 'Descanso' : 'Volver al trabajo'">
+        <button type="button" (click)="requestSkipToBreak()" class="timer-btn timer-btn-secondary timer-btn-break" [class.timer-btn-active]="currentMode() === 'break'" [attr.title]="currentMode() === 'focus' ? 'Descanso' : 'Volver al trabajo'">
           <span [ngClass]="skipActionIcon()"></span>
           <span class="timer-btn-text">{{ currentMode() === 'focus' ? ('timer.rest' | translate) : ('timer.back' | translate) }}</span>
         </button>
@@ -325,33 +364,34 @@
     </div>
   </div>
 
-  <!-- Derecha: estadísticas + tareas -->
-  <div class="flex flex-col lg:w-1/2 h-auto lg:h-full min-h-0">
-    <div class="hydro-dashboard-shell flex flex-col h-full min-h-0">
+  <!-- Derecha: estadísticas + tareas (debajo del timer en mobile; scroll en main) -->
+  <div class="flex flex-col w-full lg:w-1/2 h-auto lg:h-full min-h-0">
+    <div class="hydro-dashboard-shell flex flex-col h-auto min-h-0 lg:h-full">
+      <button
+        type="button"
+        class="share-profile-card"
+        (click)="editShareName()"
+        [attr.aria-label]="'share.editNameAria' | translate"
+        [title]="shareDisplayName() ? ('share.editName' | translate) : ('share.addName' | translate)"
+      >
+        <span class="share-profile-icon pi pi-user-edit" aria-hidden="true"></span>
+        <span class="share-profile-copy">
+          <span class="share-profile-label">{{ 'share.profileTitle' | translate }}</span>
+          <span class="share-profile-name">
+            {{ shareDisplayName() || ('share.addName' | translate) }}
+          </span>
+        </span>
+        <span class="share-profile-action pi pi-pencil" aria-hidden="true"></span>
+      </button>
+
       <app-task-list
-        class="hydro-dashboard-content flex-1 h-full min-h-0"
+        class="hydro-dashboard-content w-full min-h-0 h-auto max-lg:flex-none lg:flex-1 lg:h-full"
         (celebrationReached)="onCelebrationReached($event)"
         (shareSummaryRequest)="onShareSummaryRequest($event)"
       />
     </div>
   </div>
 </div>
-
-@if (shareDisplayName()) {
-  <div class="share-profile-floating">
-    <button
-      type="button"
-      class="share-profile-chip"
-      (click)="editShareName()"
-      [attr.aria-label]="'share.editNameAria' | translate"
-      [title]="'share.editName' | translate"
-    >
-      <span class="share-profile-label">{{ 'share.savedNameLabel' | translate }}</span>
-      <span class="share-profile-name">{{ shareDisplayName() }}</span>
-      <span class="pi pi-pencil text-[11px]"></span>
-    </button>
-  </div>
-}
 
 @if (celebrationStats()) {
   <app-celebration-dialog

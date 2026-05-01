@@ -16,6 +16,24 @@ export interface TransitionTip {
   message: string;
 }
 
+/** Opciones al completar sesión (p. ej. detección al volver del background en móvil). */
+export interface SessionNotifyOptions {
+  /** Si true y el dispositivo parece móvil, no pedimos/mostramos notificación del sistema (el usuario no tenía la pestaña activa). */
+  fromDeferredDetection?: boolean;
+}
+
+function getAudioContextConstructor(): typeof AudioContext | undefined {
+  if (typeof globalThis === 'undefined') return undefined;
+  const w = globalThis as typeof globalThis & { webkitAudioContext?: typeof AudioContext };
+  const ctor = w.AudioContext ?? w.webkitAudioContext;
+  return typeof ctor === 'function' ? ctor : undefined;
+}
+
+function isCoarsePointerDevice(): boolean {
+  if (typeof globalThis === 'undefined' || !globalThis.matchMedia) return false;
+  return globalThis.matchMedia('(pointer: coarse)').matches;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -82,7 +100,7 @@ export class NotificationService {
   /**
    * Notifica cuando se completa un bloque de enfoque. La sesión ya cuenta en las métricas del día.
    */
-  async notifyFocusSessionCompleted(): Promise<void> {
+  async notifyFocusSessionCompleted(options?: SessionNotifyOptions): Promise<void> {
     if (!this.settings.enabled) {
       return;
     }
@@ -91,13 +109,17 @@ export class NotificationService {
     const message = this.t('notifications.focusMessage');
     this.showTransitionTip('focus-to-break');
 
-    // Sonido
+    const skipSystemNotification = options?.fromDeferredDetection === true && isCoarsePointerDevice();
+
     if (this.settings.soundEnabled) {
-      this.playCompletionSound();
+      try {
+        this.playCompletionSound();
+      } catch {
+        /* Autoplay / context suspendido: no insistir */
+      }
     }
 
-    // Notificación del navegador
-    if (this.settings.browserNotificationEnabled) {
+    if (this.settings.browserNotificationEnabled && !skipSystemNotification) {
       await this.showBrowserNotification(title, message, {
         icon: '/images/logo-hydrofocus.png',
         badge: '/images/logo-hydrofocus.png',
@@ -111,7 +133,7 @@ export class NotificationService {
   /**
    * Notifica cuando se completa un descanso (con recordatorio de hidratación)
    */
-  async notifyBreakCompleted(): Promise<void> {
+  async notifyBreakCompleted(options?: SessionNotifyOptions): Promise<void> {
     if (!this.settings.enabled) {
       return;
     }
@@ -120,13 +142,17 @@ export class NotificationService {
     const message = this.t('notifications.breakMessage');
     this.showTransitionTip('break-to-focus');
 
-    // Sonido (más suave para el descanso)
+    const skipSystemNotification = options?.fromDeferredDetection === true && isCoarsePointerDevice();
+
     if (this.settings.soundEnabled) {
-      this.playBreakSound();
+      try {
+        this.playBreakSound();
+      } catch {
+        /* Autoplay / context suspendido */
+      }
     }
 
-    // Notificación del navegador
-    if (this.settings.browserNotificationEnabled) {
+    if (this.settings.browserNotificationEnabled && !skipSystemNotification) {
       await this.showBrowserNotification(title, message, {
         icon: '/images/logo-hydrofocus.png',
         badge: '/images/logo-hydrofocus.png',
@@ -231,11 +257,11 @@ export class NotificationService {
    * para que el sonido pueda reproducirse después cuando termine el timer.
    */
   prepareAudio(): void {
-    if (typeof window === 'undefined' || !window.AudioContext && !(window as any).webkitAudioContext) return;
+    const Ctor = getAudioContextConstructor();
+    if (typeof globalThis === 'undefined' || !Ctor) return;
     try {
       if (!this.audioContext) {
-        const Ctx = window.AudioContext || (window as any).webkitAudioContext;
-        this.audioContext = new Ctx();
+        this.audioContext = new Ctor();
       }
       if (this.audioContext.state === 'suspended') {
         this.audioContext.resume();
@@ -315,11 +341,12 @@ export class NotificationService {
   }
 
   private getAudioContext(): AudioContext | null {
-    if (typeof window === 'undefined') return null;
+    if (typeof globalThis === 'undefined') return null;
     try {
       if (!this.audioContext) {
-        const Ctx = window.AudioContext || (window as any).webkitAudioContext;
-        this.audioContext = new Ctx();
+        const Ctor = getAudioContextConstructor();
+        if (!Ctor) return null;
+        this.audioContext = new Ctor();
       }
       if (this.audioContext.state === 'suspended') {
         this.audioContext.resume();

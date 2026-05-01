@@ -1,6 +1,7 @@
 import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HydroFocusDailyService } from '../../../core/services/hydrofocus-daily.service';
+import { AmbientSoundService } from '../../../core/services/ambient-sound.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService, AppLanguage } from '../../../core/i18n/language.service';
 
@@ -14,6 +15,7 @@ import { LanguageService, AppLanguage } from '../../../core/i18n/language.servic
 export class HeaderComponent {
   private daily = inject(HydroFocusDailyService);
   private languageService = inject(LanguageService);
+  readonly ambient = inject(AmbientSoundService);
 
   sessionNumber = computed(() => this.daily.completedSessions() + 1);
   focusMinutes = this.daily.totalFocusMinutes;

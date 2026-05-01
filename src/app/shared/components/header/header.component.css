@@ -1,1 +1,224 @@
-/* Header styles moved to Tailwind utilities in template. */
+.focusflow-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 76px;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(124, 170, 232, 0.12);
+  background:
+    radial-gradient(circle at 16% -90%, rgba(15, 23, 42, 0.72), rgba(15, 23, 42, 0) 44%),
+    radial-gradient(circle at 18% -90%, rgba(34, 211, 238, 0.08), rgba(34, 211, 238, 0) 42%),
+    linear-gradient(180deg, rgba(7, 15, 35, 0.96) 0%, rgba(7, 15, 35, 0.8) 100%);
+  backdrop-filter: blur(12px);
+}
+
+.focusflow-header::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(94, 234, 212, 0.28), transparent);
+  pointer-events: none;
+}
+
+.focusflow-header-inner {
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.focusflow-brand {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 0.78rem;
+}
+
+.focusflow-logo-frame {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  opacity: 0.9;
+}
+
+.focusflow-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 14px rgba(34, 211, 238, 0.12));
+}
+
+.focusflow-brand-copy {
+  min-width: 0;
+}
+
+.focusflow-brand-copy h1 {
+  margin: 0;
+  color: rgba(148, 163, 184, 0.96);
+  font-size: clamp(1.38rem, 2.4vw, 1.8rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+.focusflow-brand-copy h1 span {
+  color: rgba(164, 191, 220, 0.94);
+}
+
+.focusflow-brand-copy p {
+  margin: 0.35rem 0 0;
+  max-width: 22rem;
+  color: rgba(203, 222, 248, 0.72);
+  font-size: clamp(0.72rem, 1.4vw, 0.82rem);
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.focusflow-live {
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+  color: rgba(220, 230, 255, 0.78);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.focusflow-live-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: #35e8ff;
+  box-shadow: 0 0 12px rgba(53, 232, 255, 0.7);
+}
+
+.focusflow-live-separator {
+  color: rgba(220, 230, 255, 0.45);
+}
+
+.focusflow-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: 0 0 auto;
+}
+
+.focusflow-ambient-btn {
+  display: grid;
+  place-items: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(111, 172, 255, 0.24);
+  background: rgba(6, 16, 40, 0.62);
+  color: rgba(186, 210, 240, 0.72);
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.focusflow-ambient-btn .pi {
+  font-size: 0.95rem;
+}
+
+.focusflow-ambient-btn:hover {
+  color: rgba(245, 250, 255, 0.95);
+  border-color: rgba(129, 206, 255, 0.38);
+  background: rgba(12, 28, 58, 0.78);
+}
+
+.focusflow-ambient-btn--on {
+  color: rgba(165, 243, 252, 0.95);
+  border-color: rgba(94, 234, 212, 0.45);
+  background: rgba(7, 42, 48, 0.55);
+}
+
+.focusflow-ambient-btn--playing {
+  box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.2), 0 0 14px rgba(45, 212, 191, 0.18);
+}
+
+.focusflow-language {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 0 0 auto;
+  border: 1px solid rgba(111, 172, 255, 0.24);
+  border-radius: 999px;
+  background: rgba(6, 16, 40, 0.62);
+  padding: 0.25rem;
+}
+
+.focusflow-language button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.28rem 0.52rem;
+  background: transparent;
+  color: rgba(186, 210, 240, 0.8);
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  transition: color 150ms ease, background 150ms ease;
+}
+
+.focusflow-language button:hover,
+.focusflow-language-active {
+  color: #fff !important;
+  background: rgba(49, 186, 255, 0.28) !important;
+}
+
+@media (min-width: 460px) {
+  .focusflow-live {
+    display: inline-flex;
+  }
+}
+
+@media (min-width: 640px) {
+  .focusflow-header-inner {
+    padding: 0 1.25rem;
+    gap: 1rem;
+  }
+
+  .focusflow-brand {
+    gap: 0.95rem;
+  }
+
+  .focusflow-logo-frame {
+    width: 58px;
+    height: 58px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .focusflow-header {
+    min-height: 80px;
+  }
+
+  .focusflow-header-inner {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .focusflow-logo-frame {
+    width: 48px;
+    height: 48px;
+  }
+
+  .focusflow-brand-copy p {
+    max-width: 11rem;
+  }
+}

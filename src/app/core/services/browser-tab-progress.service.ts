@@ -172,11 +172,11 @@ export class BrowserTabProgressService {
       gradient.addColorStop(0, '#6CEAFF');
       gradient.addColorStop(1, '#2A7CFF');
     } else {
-      gradient.addColorStop(0, '#65F5D4');
-      gradient.addColorStop(1, '#2FC8F6');
+      gradient.addColorStop(0, '#FBBF24');
+      gradient.addColorStop(1, '#F97316');
     }
     ctx.strokeStyle = gradient;
-    ctx.shadowColor = mode === 'focus' ? 'rgba(45, 212, 255, 0.55)' : 'rgba(52, 211, 153, 0.5)';
+    ctx.shadowColor = mode === 'focus' ? 'rgba(45, 212, 255, 0.55)' : 'rgba(249, 115, 22, 0.5)';
     ctx.shadowBlur = 8;
     ctx.beginPath();
     ctx.arc(center, center, radius, startAngle, endAngle);

@@ -24,14 +24,11 @@ export class SeoI18nService {
   private updateSeo(): void {
     const lang = this.language.currentLanguage();
     const baseUrl = this.documentRef.location?.origin || 'https://focusandhydrate.com';
-    const path = this.router.url.split('?')[0] || `/${lang}`;
+    const path = this.router.url.split('?')[0] || '/';
     const canonical = `${baseUrl}${path}`;
     const socialImage = `${baseUrl}${this.socialImagePath}`;
-    const opposite = lang === 'es' ? 'en' : 'es';
-    const oppositePath = path.replace(/^\/(es|en)/, `/${opposite}`);
-    const alternate = `${baseUrl}${oppositePath}`;
     const locale = lang === 'es' ? 'es_ES' : 'en_US';
-    const oppositeLocale = opposite === 'es' ? 'es_ES' : 'en_US';
+    const oppositeLocale = lang === 'es' ? 'en_US' : 'es_ES';
 
     const appTitle = lang === 'es'
       ? 'Focus and Hydrate | Productividad con Pomodoro, hidratación y tareas'
@@ -67,10 +64,9 @@ export class SeoI18nService {
     this.meta.updateTag({ name: 'twitter:image', content: socialImage });
 
     this.setLink('canonical', canonical);
-    this.setLink('alternate-es', `${baseUrl}${path.replace(/^\/(es|en)/, '/es')}`, 'alternate', 'es');
-    this.setLink('alternate-en', `${baseUrl}${path.replace(/^\/(es|en)/, '/en')}`, 'alternate', 'en');
+    this.setLink('alternate-es', canonical, 'alternate', 'es');
+    this.setLink('alternate-en', canonical, 'alternate', 'en');
     this.setLink('alternate-x-default', canonical, 'alternate', 'x-default');
-    this.setLink('alternate-current', alternate, 'alternate', opposite);
   }
 
   private setLink(id: string, href: string, rel = 'canonical', hreflang?: string): void {

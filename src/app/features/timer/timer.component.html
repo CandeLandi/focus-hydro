@@ -333,9 +333,11 @@
           {{ 'timer.mobileAlertsHint' | translate }}
         </p>
 
-        <!-- Botella + halos -->
-        <div class="flex flex-1 min-h-0 sm:min-h-[240px] lg:min-h-[340px] lg:flex-1 justify-center items-center w-full bottle-stage">
-          <div class="h-[clamp(140px,22svh,240px)] sm:h-[clamp(220px,32vh,360px)] lg:h-full aspect-[7/10] w-auto max-w-full bottle-container">
+        <!-- Botella + halos: móvil con altura más generosa (antes tope 240px / 22svh dejaba la animación chica) -->
+        <div class="flex flex-1 min-h-0 sm:min-h-[260px] lg:min-h-[340px] lg:flex-1 justify-center items-center w-full bottle-stage">
+          <div
+            class="h-[clamp(176px,min(48svh,78dvw),320px)] sm:h-[clamp(232px,36vh,400px)] lg:h-full aspect-[7/10] w-auto max-w-full bottle-container"
+          >
             <app-water-bottle [progress]="timerProgress()" [isBreak]="isBreak()" />
           </div>
         </div>

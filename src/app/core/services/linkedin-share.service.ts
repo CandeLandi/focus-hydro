@@ -3,7 +3,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { CelebrationStats } from '../../shared/models/celebration.model';
 
 /** Public site URL used in LinkedIn share-offsite and suggested post CTA. */
-export const FOCUSFLOW_PUBLIC_SITE_URL = 'https://focusflow-pomodoro.com' as const;
+export const FOCUSFLOW_PUBLIC_SITE_URL = 'https://www.focusflow-pomodoro.com' as const;
 
 export interface LinkedInShareTabResult {
   readonly opened: boolean;

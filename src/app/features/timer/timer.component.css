@@ -161,10 +161,12 @@
   50% { opacity: 0.5; }
 }
 
-/* Timer display */
+/* Timer display: hermano de la botella (no dentro del flex-1) + capa por encima de halos si hay solape */
 .timer-display-section {
-  margin-top: 8px;
+  margin-top: 10px;
+  padding: 0 0.35rem;
   position: relative;
+  z-index: 2;
   flex-shrink: 0;
 }
 .timer-label {
@@ -175,7 +177,7 @@
   opacity: 0.95;
 }
 .timer-time {
-  font-size: clamp(3rem, 6.2vw, 4.65rem);
+  font-size: clamp(2.5rem, 5.2vw, 4rem);
   font-weight: 780;
   line-height: 1;
   letter-spacing: -0.03em;
@@ -222,7 +224,7 @@
   display: grid;
   grid-template-columns: 1fr 1.4fr 1fr;
   gap: 14px;
-  margin-top: 24px;
+  margin-top: 18px;
   width: 100%;
   flex-shrink: 0;
   padding-bottom: 4px;
@@ -445,8 +447,34 @@
 
 .bottle-stage {
   position: relative;
+  /* Halos recortados: contenidos en water-bottle (menos inset); visible + padding de aire */
   overflow: visible;
   isolation: isolate;
+  box-sizing: border-box;
+  padding: clamp(6px, 1.5dvh, 18px) clamp(4px, 1.2vw, 14px);
+}
+
+/* Desktop / notebook: escala un poco más contenida y tope de altura coherente con el HTML */
+@media (min-width: 1024px) {
+  .timer-card .timer-time {
+    font-size: clamp(2.2rem, 3.4vw, 3.35rem);
+  }
+
+  .timer-card .timer-btn {
+    height: 50px;
+    font-size: 14px;
+  }
+
+  .timer-card .timer-buttons {
+    margin-top: 14px;
+  }
+}
+
+@media (min-width: 1024px) and (max-height: 820px) {
+  .timer-card .bottle-container {
+    max-height: min(40vh, 300px) !important;
+    height: min(40vh, 300px) !important;
+  }
 }
 
 .bottle-container {

@@ -294,7 +294,8 @@
   <!-- Izquierda: botella + timer + controles -->
   <div class="flex flex-col w-full lg:w-1/2 h-auto min-h-0 lg:h-full">
     <div class="timer-card hydro-panel mobile-full-height-card flex flex-col h-full min-h-0" [ngClass]="timerStateClass()">
-      <div class="timer-main-content flex flex-col items-center justify-start gap-1 sm:gap-2 flex-1 min-h-0 w-full overflow-hidden lg:overflow-visible">
+      <!-- Solo cabecera + botella en flex-1: el contador va fuera para que no lo empujen ni tapen los botones -->
+      <div class="timer-main-content flex flex-col items-center justify-start gap-1 sm:gap-2 flex-1 min-h-0 w-full overflow-hidden">
         <div class="session-label shrink-0 w-full flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-center">
           <span class="session-dot" [class.session-dot-pulse]="isRunning()"></span>
           <span>
@@ -333,20 +334,20 @@
           {{ 'timer.mobileAlertsHint' | translate }}
         </p>
 
-        <!-- Botella + halos: móvil con altura más generosa (antes tope 240px / 22svh dejaba la animación chica) -->
-        <div class="flex flex-1 min-h-0 sm:min-h-[260px] lg:min-h-[340px] lg:flex-1 justify-center items-center w-full bottle-stage">
+        <!-- Botella + halos -->
+        <div class="flex flex-1 min-h-0 sm:min-h-[260px] lg:min-h-0 lg:flex-1 justify-center items-center w-full bottle-stage">
           <div
-            class="h-[clamp(176px,min(48svh,78dvw),320px)] sm:h-[clamp(232px,36vh,400px)] lg:h-full aspect-[7/10] w-auto max-w-full bottle-container"
+            class="h-[clamp(176px,min(48svh,78dvw),320px)] sm:h-[clamp(232px,36vh,400px)] lg:max-h-[min(48vh,380px)] lg:h-[min(48vh,380px)] aspect-[7/10] w-auto max-w-full bottle-container"
           >
             <app-water-bottle [progress]="timerProgress()" [isBreak]="isBreak()" />
           </div>
         </div>
+      </div>
 
-        <div class="timer-display-section text-center w-full shrink-0">
-          <div class="timer-label">{{ isBreak() ? (isLongBreak() ? ('timer.longBreak' | translate) : ('timer.break' | translate)) : ('timer.focus' | translate) }}</div>
-          <div class="timer-time">{{ formatTime(timeRemaining()) }}</div>
-          <p class="timer-microcopy">{{ timerMicrocopy() }}</p>
-        </div>
+      <div class="timer-display-section text-center w-full shrink-0">
+        <div class="timer-label">{{ isBreak() ? (isLongBreak() ? ('timer.longBreak' | translate) : ('timer.break' | translate)) : ('timer.focus' | translate) }}</div>
+        <div class="timer-time">{{ formatTime(timeRemaining()) }}</div>
+        <p class="timer-microcopy">{{ timerMicrocopy() }}</p>
       </div>
 
       <div class="timer-buttons">

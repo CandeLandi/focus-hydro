@@ -8,6 +8,7 @@ import { BrowserTabProgressService } from '../../core/services/browser-tab-progr
 import { HydroTask } from '../../shared/models/daily.model';
 import { TimerPersistedState } from '../../shared/models/timer-state.model';
 import { LanguageService } from '../../core/i18n/language.service';
+import { MessageService } from 'primeng/api';
 
 const TIMER_STATE_KEY = 'hydrofocus-timer-state';
 const TIMER_CONFIG_KEY = 'hydrofocus-timer-config';
@@ -66,7 +67,10 @@ class TranslateServiceMock {
       'browserTab.lastMinuteFocus': 'Último minuto • Foco',
       'common.close': 'Cerrar',
       'share.nameErrorRequired': 'Ingresá tu nombre para continuar.',
-      'share.nameErrorMin': 'Usá al menos 2 caracteres.'
+      'share.nameErrorMin': 'Usá al menos 2 caracteres.',
+      'timer.miniModeUnsupported': 'Mini no soportado.',
+      'timer.mobileAlertsHint': 'Aviso móvil.',
+      'timer.mobileHintsToastTitle': 'Pantalla chica'
     };
     return values[key] ?? key;
   }
@@ -94,7 +98,8 @@ describe('TimerComponent', () => {
             currentLanguage: signal('es'),
             translationTick: signal(0)
           }
-        }
+        },
+        { provide: MessageService, useValue: { add: jasmine.createSpy('add') } }
       ]
     })
       .overrideComponent(TimerComponent, { set: { template: '' } })

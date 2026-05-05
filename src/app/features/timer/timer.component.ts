@@ -15,6 +15,7 @@ import { MiniTimerPictureInPictureService, MiniTimerViewState } from '../../core
 import { TimerPersistedState } from '../../shared/models/timer-state.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../core/i18n/language.service';
+import { MessageService } from 'primeng/api';
 
 export interface TimerConfig {
   focusDuration: number;
@@ -85,10 +86,14 @@ export class TimerComponent implements OnDestroy, OnInit {
   private miniTimerPip = inject(MiniTimerPictureInPictureService);
   private translate = inject(TranslateService);
   private language = inject(LanguageService);
+  private messageService = inject(MessageService);
   sessionsCompleted = computed(() => this.dailyService.completedSessions());
   totalFocusTimeMinutes = computed(() => this.dailyService.totalFocusMinutes());
   transitionTip = this.notificationService.transitionTip;
   isMiniModeSupported = this.miniTimerPip.isSupported();
+
+  private mobileHintsToastMql: MediaQueryList | null = null;
+  private mobileHintsToastMqlHandler: ((ev: MediaQueryListEvent) => void) | null = null;
 
   private currentSegmentTotalSeconds = computed(() => {
     const config = this.timerConfig();
@@ -267,7 +272,43 @@ export class TimerComponent implements OnDestroy, OnInit {
       document.addEventListener('visibilitychange', this.visibilityListener);
       this.pageShowListener = () => this.syncWallClockAfterHidden();
       window.addEventListener('pageshow', this.pageShowListener);
+
+      this.setupMobileHintsToast();
     }
+  }
+
+  /** En ≤640px los avisos van al toast para no comprimir la botella. */
+  private setupMobileHintsToast(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const mq = window.matchMedia('(max-width: 640px)');
+    this.mobileHintsToastMql = mq;
+    if (mq.matches) {
+      queueMicrotask(() => this.showMobileHintsToast());
+    }
+    this.mobileHintsToastMqlHandler = (ev: MediaQueryListEvent) => {
+      if (ev.matches) {
+        queueMicrotask(() => this.showMobileHintsToast());
+      }
+    };
+    mq.addEventListener('change', this.mobileHintsToastMqlHandler);
+  }
+
+  private showMobileHintsToast(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.language.currentLanguage();
+    this.language.translationTick();
+    const parts: string[] = [];
+    if (!this.isMiniModeSupported) {
+      parts.push(this.translate.instant('timer.miniModeUnsupported'));
+    }
+    parts.push(this.translate.instant('timer.mobileAlertsHint'));
+    const detail = parts.join('\n\n');
+    this.messageService.add({
+      severity: 'info',
+      summary: this.translate.instant('timer.mobileHintsToastTitle'),
+      detail,
+      life: 9000
+    });
   }
 
   private loadTimerConfig(): void {
@@ -513,6 +554,11 @@ export class TimerComponent implements OnDestroy, OnInit {
   }
 
   ngOnDestroy(): void {
+    if (this.mobileHintsToastMql && this.mobileHintsToastMqlHandler) {
+      this.mobileHintsToastMql.removeEventListener('change', this.mobileHintsToastMqlHandler);
+      this.mobileHintsToastMql = null;
+      this.mobileHintsToastMqlHandler = null;
+    }
     this.stopInterval();
     this.browserTabProgress.reset();
     this.miniTimerPip.close();

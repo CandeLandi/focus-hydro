@@ -14,8 +14,8 @@ const SHARE_CARD_ES: Record<string, string> = {
   'shareCard.statsTasksPlural': 'TAREAS COMPLETADAS',
   'shareCard.statsFocus': 'DE FOCO',
   'shareCard.statsProgress': 'PROGRESO',
-  'shareCard.hydrationLead': 'Enfoque + hidratación = ',
-  'shareCard.hydrationHighlight': 'mejor tú.',
+  'shareCard.hydrationLead': 'Enfoque + hidratación + constancia = ',
+  'shareCard.hydrationHighlight': 'tu mejor versión.',
   'shareCard.hydrationTagline': '',
   'shareCard.footerTagline': 'Temporizador Pomodoro'
 };

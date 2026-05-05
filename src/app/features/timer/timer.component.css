@@ -117,22 +117,6 @@
   color: rgba(160, 182, 214, 0.8);
 }
 
-.timer-mobile-alerts-hint {
-  display: none;
-}
-
-@media (max-width: 640px) {
-  .timer-mobile-alerts-hint {
-    display: block;
-    margin: 0.15rem 0.5rem 0;
-    max-width: 22rem;
-    text-align: center;
-    font-size: 10.5px;
-    line-height: 1.45;
-    color: rgba(148, 163, 184, 0.82);
-  }
-}
-
 .pomodoro-config-btn {
   height: 33px;
   border-radius: 10px;
@@ -481,6 +465,15 @@
   position: relative;
   overflow: visible;
   z-index: 0;
+  box-sizing: border-box;
+  /* En móvil menos padding para que el SVG use casi todo el alto; desde sm el rem pedido. */
+  padding: 0.4rem;
+}
+
+@media (min-width: 640px) {
+  .bottle-container {
+    padding: 1rem;
+  }
 }
 
 /* Lado derecho: dashboard liviano (sin card pesada) */
@@ -527,9 +520,15 @@
     display: none;
   }
 
+  /* Misma lectura que desktop: panel con fondo y padding (antes quedaba “plano” en móvil) */
   .hydro-dashboard-content {
-    padding: 0;
-    background: transparent;
+    height: auto;
+    min-height: 0;
+    flex: 1 1 0%;
+    padding: 0.55rem 0.45rem 0.65rem;
+    border-radius: 1rem;
+    background: linear-gradient(180deg, rgba(7, 14, 29, 0.55) 0%, rgba(7, 14, 29, 0.38) 100%);
+    backdrop-filter: blur(6px);
   }
 }
 
@@ -850,10 +849,11 @@
   box-sizing: border-box;
 }
 
-@media (max-width: 520px) {
+@media (max-width: 768px) {
   .transition-tip-card {
+    left: max(0.65rem, env(safe-area-inset-left, 0px));
     right: max(0.65rem, env(safe-area-inset-right, 0px));
-    bottom: max(0.65rem, env(safe-area-inset-bottom, 0px));
+    margin-inline: auto;
     width: min(96vw, 360px);
     max-width: calc(100vw - 1.25rem - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
     max-height: min(44vh, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 1.5rem));

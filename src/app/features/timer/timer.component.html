@@ -326,18 +326,15 @@
           </button>
         </div>
         @if (!isMiniModeSupported) {
-          <p class="mini-mode-hint">
+          <p class="mini-mode-hint hidden min-[641px]:block">
             {{ 'timer.miniModeUnsupported' | translate }}
           </p>
         }
-        <p class="timer-mobile-alerts-hint" role="note">
-          {{ 'timer.mobileAlertsHint' | translate }}
-        </p>
 
         <!-- Botella + halos -->
         <div class="flex flex-1 min-h-0 sm:min-h-[260px] lg:min-h-0 lg:flex-1 justify-center items-center w-full bottle-stage">
           <div
-            class="h-[clamp(176px,min(48svh,78dvw),320px)] sm:h-[clamp(232px,36vh,400px)] lg:max-h-[min(48vh,380px)] lg:h-[min(48vh,380px)] aspect-[7/10] w-auto max-w-full bottle-container"
+            class="h-[clamp(210px,min(56svh,92dvw),360px)] sm:h-[clamp(232px,36vh,400px)] lg:max-h-[min(48vh,380px)] lg:h-[min(48vh,380px)] aspect-[7/10] w-auto max-w-full bottle-container flex min-h-0 flex-col items-center justify-center"
           >
             <app-water-bottle [progress]="timerProgress()" [isBreak]="isBreak()" />
           </div>
@@ -367,12 +364,12 @@
     </div>
   </div>
 
-  <!-- Derecha: estadísticas + tareas (debajo del timer en mobile; scroll en main) -->
-  <div class="flex flex-col w-full lg:w-1/2 h-auto lg:h-full min-h-0">
-    <div class="hydro-dashboard-shell flex flex-col h-auto min-h-0 lg:h-full">
+  <!-- Derecha: estadísticas + tareas (móvil: min 100dvh + scroll interno en tareas; desktop: mitad) -->
+  <div class="flex h-auto min-h-0 w-full max-lg:min-h-dvh flex-col lg:h-full lg:w-1/2">
+    <div class="hydro-dashboard-shell flex h-auto min-h-0 max-lg:min-h-0 max-lg:flex-1 max-lg:overflow-hidden flex-col lg:h-full">
       <button
         type="button"
-        class="share-profile-card"
+        class="share-profile-card shrink-0"
         (click)="editShareName()"
         [attr.aria-label]="'share.editNameAria' | translate"
         [title]="shareDisplayName() ? ('share.editName' | translate) : ('share.addName' | translate)"
@@ -388,7 +385,7 @@
       </button>
 
       <app-task-list
-        class="hydro-dashboard-content w-full min-h-0 h-auto max-lg:flex-none lg:flex-1 lg:h-full"
+        class="hydro-dashboard-content flex h-auto min-h-0 w-full flex-col max-lg:min-h-0 max-lg:flex-1 max-lg:overflow-hidden lg:flex-1 lg:h-full"
         (celebrationReached)="onCelebrationReached($event)"
         (shareSummaryRequest)="onShareSummaryRequest($event)"
       />

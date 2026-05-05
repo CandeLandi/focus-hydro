@@ -22,6 +22,7 @@
     "miniView": "Mantener visible",
     "miniViewTitle": "Abrí un timer flotante para cambiar de pestaña sin perder el ritmo.",
     "miniModeUnsupported": "El timer flotante no es compatible con este navegador.",
+    "mobileHintsToastTitle": "Uso en pantalla chica",
     "mobileAlertsHint": "Para mejores avisos, mantené FocusFlow abierto durante la sesión. En el celular el temporizador puede pausarse en segundo plano.",
     "reset": "Reiniciar",
     "rest": "Descanso",
@@ -147,8 +148,8 @@
     "statsTasksPlural": "TAREAS COMPLETADAS",
     "statsFocus": "DE FOCO",
     "statsProgress": "PROGRESO",
-    "hydrationLead": "Enfoque + hidratación = ",
-    "hydrationHighlight": "mejor tú.",
+    "hydrationLead": "Enfoque + hidratación + constancia = ",
+    "hydrationHighlight": "tu mejor versión.",
     "hydrationTagline": "",
     "footerTagline": "Temporizador Pomodoro"
   },

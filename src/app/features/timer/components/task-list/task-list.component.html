@@ -1,14 +1,16 @@
-<div class="flex h-auto min-h-0 flex-col gap-3 overflow-visible lg:h-full lg:overflow-hidden">
-  <app-quick-stats [stats]="stats()" />
+<div class="flex h-auto min-h-0 max-lg:h-full max-lg:min-h-0 max-lg:flex-1 flex-col gap-3 overflow-visible max-lg:overflow-hidden lg:h-full lg:overflow-hidden">
+  <app-quick-stats class="block shrink-0" [stats]="stats()" />
 
-  <div class="relative isolate flex min-h-0 flex-col gap-2 overflow-visible lg:flex-1 lg:overflow-hidden">
+  <div
+    class="relative isolate flex min-h-0 flex-1 flex-col gap-2 overflow-hidden lg:min-h-0 lg:flex-1 lg:overflow-hidden"
+  >
     <div
       aria-hidden="true"
-      class="pointer-events-none absolute -right-[78px] top-[130px] -z-10 h-[250px] w-[250px] bg-[url('/images/dashboard.svg')] bg-contain bg-center bg-no-repeat opacity-70 max-lg:opacity-45 max-md:hidden"
+      class="pointer-events-none absolute -right-3 top-[118px] -z-10 h-[148px] w-[148px] bg-[url('/images/dashboard.svg')] bg-contain bg-center bg-no-repeat opacity-[0.38] sm:-right-10 sm:top-[150px] sm:h-[200px] sm:w-[200px] sm:opacity-[0.44] lg:-right-[78px] lg:top-[130px] lg:h-[250px] lg:w-[250px] lg:opacity-70"
     ></div>
     <div
       aria-hidden="true"
-      class="pointer-events-none absolute -bottom-[95px] -left-[140px] -z-10 h-[300px] w-[300px] bg-[url('/images/dashboard-2.svg')] bg-contain bg-center bg-no-repeat opacity-70 max-lg:opacity-45 max-md:hidden"
+      class="pointer-events-none absolute -bottom-7 -left-5 -z-10 h-[158px] w-[158px] bg-[url('/images/dashboard-2.svg')] bg-contain bg-center bg-no-repeat opacity-[0.34] sm:-bottom-[52px] sm:-left-14 sm:h-[220px] sm:w-[220px] sm:opacity-[0.44] lg:-bottom-[95px] lg:-left-[140px] lg:h-[300px] lg:w-[300px] lg:opacity-70"
     ></div>
 
     <div class="flex shrink-0 flex-wrap items-center justify-between gap-2.5">
@@ -45,7 +47,7 @@
       </button>
     </div>
 
-    <div class="task-scroll min-h-0 pr-1 max-lg:overflow-visible lg:flex-1 lg:min-h-0 lg:overflow-y-auto">
+    <div class="task-scroll min-h-0 flex-1 pr-1 max-lg:min-h-0 max-lg:overflow-y-auto lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
       @if (tasks().length === 0) {
         <div class="text-center py-8 text-slate-400">
           <p class="text-sm font-medium">{{ 'tasks.emptyTitle' | translate }}</p>

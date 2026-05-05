@@ -22,6 +22,7 @@
     "miniView": "Keep visible",
     "miniViewTitle": "Open a floating timer so you can switch tabs without losing sight of your flow.",
     "miniModeUnsupported": "Floating timer is not supported in this browser.",
+    "mobileHintsToastTitle": "On small screens",
     "mobileAlertsHint": "For best alerts, keep FocusFlow open during your session. Timers can pause in the background on mobile.",
     "reset": "Reset",
     "rest": "Break",
@@ -147,8 +148,8 @@
     "statsTasksPlural": "TASKS COMPLETED",
     "statsFocus": "FOCUS",
     "statsProgress": "PROGRESS",
-    "hydrationLead": "Focus + hydration = ",
-    "hydrationHighlight": "a better you.",
+    "hydrationLead": "Focus + hydration + consistency = ",
+    "hydrationHighlight": "your best version.",
     "hydrationTagline": "",
     "footerTagline": "Pomodoro timer"
   },

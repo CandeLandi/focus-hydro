@@ -2,6 +2,16 @@
   min-width: 0;
   overflow-wrap: anywhere;
   word-break: break-word;
+  /* Misma altura mínima que .task-action-btn: centra el texto con check/borrar en una línea */
+  display: flex;
+  align-items: center;
+  min-height: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .task-row-text {
+    min-height: 1.75rem;
+  }
 }
 
 .task-input,
@@ -128,15 +138,12 @@
   gap: 0.55rem;
   flex-shrink: 0;
   padding-left: 0.35rem;
-  align-self: start;
-  margin-top: 0.06rem;
 }
 
 @media (min-width: 1024px) {
   .task-actions {
     gap: 0.4rem;
     padding-left: 0.2rem;
-    margin-top: 0.1rem;
   }
 }
 

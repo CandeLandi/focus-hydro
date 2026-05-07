@@ -204,11 +204,43 @@
 
 @media (min-width: 1024px) {
   .focusflow-header {
-    min-height: 80px;
+    min-height: 64px;
   }
 
   .focusflow-header-inner {
-    padding: 0 1.5rem;
+    padding: 0 1.25rem;
+  }
+
+  .focusflow-brand {
+    gap: 0.72rem;
+  }
+
+  .focusflow-logo-frame {
+    width: 46px;
+    height: 46px;
+  }
+
+  .focusflow-brand-copy h1 {
+    font-size: clamp(1.12rem, 1vw + 0.85rem, 1.35rem);
+    letter-spacing: -0.038em;
+  }
+
+  .focusflow-brand-copy p {
+    margin-top: 0.22rem;
+    font-size: clamp(0.65rem, 0.85vw, 0.74rem);
+  }
+
+  .focusflow-live {
+    font-size: 0.7rem;
+  }
+
+  .focusflow-ambient-btn {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .focusflow-ambient-btn .pi {
+    font-size: 0.88rem;
   }
 }
 

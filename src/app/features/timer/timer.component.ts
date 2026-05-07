@@ -155,11 +155,9 @@ export class TimerComponent implements OnDestroy, OnInit {
   });
 
   readonly dialogPosition = {
-    intro: 'top' as const,
     center: 'center' as const
   };
 
-  sessionIntroVisible = signal(false);
   hasShownFirstFocusIntro = signal(false);
   hasShownFirstBreakIntro = signal(false);
   skipConfirmVisible = signal(false);
@@ -623,12 +621,11 @@ export class TimerComponent implements OnDestroy, OnInit {
 
   startTimer(): void {
     this.notificationService.prepareAudio();
-    const isFirstFocus = !this.hasShownFirstFocusIntro() && this.currentMode() === 'focus';
-    const isFirstBreak = !this.hasShownFirstBreakIntro() && this.currentMode() === 'break';
-    if (isFirstFocus || isFirstBreak) {
-      this.sessionIntroVisible.set(true);
-      if (isFirstFocus) this.hasShownFirstFocusIntro.set(true);
-      if (isFirstBreak) this.hasShownFirstBreakIntro.set(true);
+    if (this.currentMode() === 'focus' && !this.hasShownFirstFocusIntro()) {
+      this.hasShownFirstFocusIntro.set(true);
+    }
+    if (this.currentMode() === 'break' && !this.hasShownFirstBreakIntro()) {
+      this.hasShownFirstBreakIntro.set(true);
     }
     const now = Date.now();
     this.startedAt.set(now);
@@ -645,10 +642,6 @@ export class TimerComponent implements OnDestroy, OnInit {
   toggleTimer(): void {
     if (this.isRunning()) this.pauseTimer();
     else this.startTimer();
-  }
-
-  closeSessionIntro(): void {
-    this.sessionIntroVisible.set(false);
   }
 
   resetTimer(): void {

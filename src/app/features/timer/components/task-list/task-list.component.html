@@ -1,4 +1,4 @@
-<div class="flex h-auto min-h-0 max-lg:h-full max-lg:min-h-0 max-lg:flex-1 flex-col gap-3 overflow-visible max-lg:overflow-hidden lg:h-full lg:overflow-hidden">
+<div class="flex h-auto min-h-0 max-lg:h-full max-lg:min-h-0 max-lg:flex-1 flex-col gap-3 lg:gap-2.5 overflow-visible max-lg:overflow-hidden lg:h-full lg:overflow-hidden">
   <app-quick-stats class="block shrink-0" [stats]="stats()" />
 
   <div
@@ -6,27 +6,27 @@
   >
     <div
       aria-hidden="true"
-      class="pointer-events-none absolute -right-3 top-[118px] -z-10 h-[148px] w-[148px] bg-[url('/images/dashboard.svg')] bg-contain bg-center bg-no-repeat opacity-[0.38] sm:-right-10 sm:top-[150px] sm:h-[200px] sm:w-[200px] sm:opacity-[0.44] lg:-right-[78px] lg:top-[130px] lg:h-[250px] lg:w-[250px] lg:opacity-70"
+      class="pointer-events-none absolute -right-3 top-[118px] -z-10 h-[148px] w-[148px] bg-[url('/images/dashboard.svg')] bg-contain bg-center bg-no-repeat opacity-[0.38] sm:-right-10 sm:top-[150px] sm:h-[200px] sm:w-[200px] sm:opacity-[0.44] lg:-right-[52px] lg:top-[108px] lg:h-[175px] lg:w-[175px] lg:opacity-50"
     ></div>
     <div
       aria-hidden="true"
-      class="pointer-events-none absolute -bottom-7 -left-5 -z-10 h-[158px] w-[158px] bg-[url('/images/dashboard-2.svg')] bg-contain bg-center bg-no-repeat opacity-[0.34] sm:-bottom-[52px] sm:-left-14 sm:h-[220px] sm:w-[220px] sm:opacity-[0.44] lg:-bottom-[95px] lg:-left-[140px] lg:h-[300px] lg:w-[300px] lg:opacity-70"
+      class="pointer-events-none absolute -bottom-7 -left-5 -z-10 h-[158px] w-[158px] bg-[url('/images/dashboard-2.svg')] bg-contain bg-center bg-no-repeat opacity-[0.34] sm:-bottom-[52px] sm:-left-14 sm:h-[220px] sm:w-[220px] sm:opacity-[0.44] lg:-bottom-[72px] lg:-left-[100px] lg:h-[205px] lg:w-[205px] lg:opacity-[0.46]"
     ></div>
 
     <div class="flex shrink-0 flex-wrap items-center justify-between gap-2.5">
       <div>
-        <h3 class="mb-0.5 text-[17px] sm:text-[19px] font-bold text-[rgba(255,255,255,0.95)]">{{ 'tasks.title' | translate }}</h3>
-        <p class="text-[12px] sm:text-[13px] text-[rgba(210,220,240,0.66)]">{{ today() }}</p>
+        <h3 class="mb-0.5 text-[17px] sm:text-[19px] lg:text-[15px] font-bold text-[rgba(255,255,255,0.95)]">{{ 'tasks.title' | translate }}</h3>
+        <p class="text-[12px] sm:text-[13px] lg:text-[11px] text-[rgba(210,220,240,0.66)]">{{ today() }}</p>
       </div>
       @if (tasks().length > 0) {
         <div>
-          <span class="text-[15px] font-semibold text-[#49e6ff]">{{ completionPercentage() }}%</span>
-          <span class="ml-1 text-[13px] text-[rgba(185,200,230,0.6)]">— {{ completedCount() }}/{{ tasks().length }}</span>
+          <span class="text-[15px] lg:text-[13px] font-semibold text-[#49e6ff]">{{ completionPercentage() }}%</span>
+          <span class="ml-1 text-[13px] lg:text-[11px] text-[rgba(185,200,230,0.6)]">— {{ completedCount() }}/{{ tasks().length }}</span>
         </div>
       }
     </div>
 
-    <div class="mb-[14px] sm:mb-[18px] mt-2.5 sm:mt-3 grid shrink-0 grid-cols-[1fr_48px] sm:grid-cols-[1fr_52px] gap-2.5 sm:gap-3">
+    <div class="mb-[14px] sm:mb-[18px] lg:mb-3 mt-2.5 sm:mt-3 lg:mt-1.5 grid shrink-0 grid-cols-[1fr_48px] sm:grid-cols-[1fr_52px] lg:grid-cols-[1fr_42px] gap-2.5 sm:gap-3 lg:gap-1.5">
       <input
         type="text"
         pInputText
@@ -49,24 +49,21 @@
 
     <div class="task-scroll min-h-0 flex-1 pr-1 max-lg:min-h-0 max-lg:overflow-y-auto lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
       @if (tasks().length === 0) {
-        <div class="text-center py-8 text-slate-400">
-          <p class="text-sm font-medium">{{ 'tasks.emptyTitle' | translate }}</p>
-          <p class="text-xs mt-1">{{ 'tasks.emptySubtitle' | translate }}</p>
+        <div class="text-center py-8 lg:py-5 text-slate-400">
+          <p class="text-sm lg:text-[13px] font-medium">{{ 'tasks.emptyTitle' | translate }}</p>
+          <p class="text-xs lg:text-[11px] mt-1">{{ 'tasks.emptySubtitle' | translate }}</p>
         </div>
       } @else {
         @if (pendingTasks().length > 0) {
           <div>
-            <p class="mb-[9px] mt-0 pl-1 text-xs font-bold uppercase tracking-[0.08em] text-[rgba(160,176,206,0.62)]">{{ 'tasks.pending' | translate }}</p>
+            <p class="mb-[9px] lg:mb-1.5 mt-0 pl-1 text-xs lg:text-[10px] font-bold uppercase tracking-[0.08em] text-[rgba(160,176,206,0.62)]">{{ 'tasks.pending' | translate }}</p>
             @for (task of pendingTasks(); track task.id) {
               <div
-                class="group relative mb-2 flex min-h-14 items-center justify-between gap-[11px] overflow-hidden rounded-xl border border-[rgba(91,112,151,0.22)] bg-[linear-gradient(180deg,rgba(9,16,31,0.94)_0%,rgba(7,13,24,0.98)_100%)] px-[14px] transition-all duration-150 hover:border-[rgba(110,155,234,0.32)] hover:bg-[linear-gradient(180deg,rgba(11,19,35,0.96)_0%,rgba(8,15,28,0.99)_100%)]"
-                [ngClass]="pendingDeleteTaskId() === task.id ? 'border-[rgba(52,211,153,0.35)] before:absolute before:inset-0 before:rounded-[inherit] before:bg-[linear-gradient(90deg,transparent_0%,transparent_34%,rgba(16,185,129,0.07)_52%,rgba(16,185,129,0.2)_88%,rgba(16,185,129,0.26)_100%)] before:pointer-events-none' : ''"
+                class="group relative mb-2 lg:mb-1.5 flex min-h-14 lg:min-h-0 items-start py-2 lg:py-1.5 justify-between gap-[11px] lg:gap-2 rounded-xl lg:rounded-lg border border-[rgba(91,112,151,0.22)] bg-[linear-gradient(180deg,rgba(9,16,31,0.94)_0%,rgba(7,13,24,0.98)_100%)] px-[14px] lg:px-3 transition-all duration-150 hover:border-[rgba(110,155,234,0.32)] hover:bg-[linear-gradient(180deg,rgba(11,19,35,0.96)_0%,rgba(8,15,28,0.99)_100%)]"
+                [ngClass]="pendingDeleteTaskId() === task.id ? 'border-[rgba(248,113,113,0.45)] before:absolute before:inset-0 before:rounded-[inherit] before:bg-[linear-gradient(90deg,transparent_0%,transparent_34%,rgba(239,68,68,0.06)_52%,rgba(239,68,68,0.12)_88%,rgba(239,68,68,0.16)_100%)] before:pointer-events-none' : ''"
               >
-                <span class="relative z-[1] flex-1 text-[14.5px] font-[550] leading-[1.4] tracking-[0.003em] text-[rgba(236,242,255,0.9)]">{{ task.text }}</span>
-                @if (pendingDeleteTaskId() === task.id) {
-                  <span class="relative z-[1] max-w-28 shrink-0 text-right text-[10.5px] font-semibold uppercase leading-[1.2] tracking-[0.04em] text-[rgba(167,243,208,0.92)] max-[400px]:hidden" aria-live="polite">{{ 'tasks.delete' | translate }}</span>
-                }
-                <div class="task-actions relative z-[1]">
+                <span class="task-row-text relative z-[1] flex-1 text-[14.5px] lg:text-[13px] font-[550] leading-[1.35] lg:leading-snug tracking-[0.003em] text-[rgba(236,242,255,0.9)]">{{ task.text }}</span>
+                <div class="task-actions shrink-0 relative z-[1]">
                   @if (pendingDeleteTaskId() !== task.id) {
                     <button
                       type="button"
@@ -83,9 +80,11 @@
                     type="button"
                     (click)="onDeleteButtonClick(task, $event)"
                     class="task-action-btn task-delete-btn"
-                    [ngClass]="pendingDeleteTaskId() === task.id ? '!opacity-100 !text-[#4ade80] border-[rgba(74,222,128,0.45)] bg-[rgba(74,222,128,0.1)] hover:bg-[rgba(74,222,128,0.18)] hover:border-[rgba(74,222,128,0.6)]' : ''"
+                    [class.task-delete-btn--confirm]="pendingDeleteTaskId() === task.id"
                     [attr.aria-label]="
-                      pendingDeleteTaskId() === task.id ? 'Confirmar eliminación de la tarea' : 'Eliminar tarea'
+                      pendingDeleteTaskId() === task.id
+                        ? ('tasks.confirmDeleteAria' | translate)
+                        : ('tasks.deleteAria' | translate)
                     "
                   >
                     @if (pendingDeleteTaskId() === task.id) {
@@ -101,17 +100,14 @@
         }
         @if (doneTasks().length > 0) {
           <div>
-            <p class="mb-[9px] mt-[14px] pl-1 text-xs font-bold uppercase tracking-[0.08em] text-[rgba(160,176,206,0.62)]">{{ 'tasks.done' | translate }}</p>
+            <p class="mb-[9px] lg:mb-1.5 mt-[14px] lg:mt-3 pl-1 text-xs lg:text-[10px] font-bold uppercase tracking-[0.08em] text-[rgba(160,176,206,0.62)]">{{ 'tasks.done' | translate }}</p>
             @for (task of doneTasks(); track task.id) {
               <div
-                class="group relative mb-2 flex min-h-14 items-center justify-between gap-[11px] overflow-hidden rounded-xl border border-[rgba(90,111,145,0.22)] bg-[linear-gradient(180deg,rgba(8,14,27,0.9)_0%,rgba(6,11,20,0.95)_100%)] px-[14px] transition-all duration-150 hover:border-[rgba(110,155,234,0.32)]"
-                [ngClass]="pendingDeleteTaskId() === task.id ? 'border-[rgba(52,211,153,0.35)] before:absolute before:inset-0 before:rounded-[inherit] before:bg-[linear-gradient(90deg,transparent_0%,transparent_34%,rgba(16,185,129,0.07)_52%,rgba(16,185,129,0.2)_88%,rgba(16,185,129,0.26)_100%)] before:pointer-events-none' : ''"
+                class="group relative mb-2 lg:mb-1.5 flex min-h-14 lg:min-h-0 items-start py-2 lg:py-1.5 justify-between gap-[11px] lg:gap-2 rounded-xl lg:rounded-lg border border-[rgba(90,111,145,0.22)] bg-[linear-gradient(180deg,rgba(8,14,27,0.9)_0%,rgba(6,11,20,0.95)_100%)] px-[14px] lg:px-3 transition-all duration-150 hover:border-[rgba(110,155,234,0.32)]"
+                [ngClass]="pendingDeleteTaskId() === task.id ? 'border-[rgba(248,113,113,0.45)] before:absolute before:inset-0 before:rounded-[inherit] before:bg-[linear-gradient(90deg,transparent_0%,transparent_34%,rgba(239,68,68,0.06)_52%,rgba(239,68,68,0.12)_88%,rgba(239,68,68,0.16)_100%)] before:pointer-events-none' : ''"
               >
-                <span class="relative z-[1] flex-1 text-[14.5px] font-medium leading-[1.4] tracking-[0.003em] text-[rgba(169,182,205,0.62)] line-through [text-decoration-color:rgba(169,182,205,0.42)] [text-decoration-thickness:1.3px]">{{ task.text }}</span>
-                @if (pendingDeleteTaskId() === task.id) {
-                  <span class="relative z-[1] max-w-28 shrink-0 text-right text-[10.5px] font-semibold uppercase leading-[1.2] tracking-[0.04em] text-[rgba(167,243,208,0.92)] max-[400px]:hidden" aria-live="polite">{{ 'tasks.delete' | translate }}</span>
-                }
-                <div class="task-actions relative z-[1]">
+                <span class="task-row-text relative z-[1] flex-1 text-[14.5px] lg:text-[13px] font-medium leading-[1.35] lg:leading-snug tracking-[0.003em] text-[rgba(169,182,205,0.62)] line-through [text-decoration-color:rgba(169,182,205,0.42)] [text-decoration-thickness:1.3px]">{{ task.text }}</span>
+                <div class="task-actions shrink-0 relative z-[1]">
                   @if (pendingDeleteTaskId() !== task.id) {
                     <button
                       type="button"
@@ -128,9 +124,11 @@
                     type="button"
                     (click)="onDeleteButtonClick(task, $event)"
                     class="task-action-btn task-delete-btn"
-                    [ngClass]="pendingDeleteTaskId() === task.id ? '!opacity-100 !text-[#4ade80] border-[rgba(74,222,128,0.45)] bg-[rgba(74,222,128,0.1)] hover:bg-[rgba(74,222,128,0.18)] hover:border-[rgba(74,222,128,0.6)]' : ''"
+                    [class.task-delete-btn--confirm]="pendingDeleteTaskId() === task.id"
                     [attr.aria-label]="
-                      pendingDeleteTaskId() === task.id ? 'Confirmar eliminación de la tarea' : 'Eliminar tarea'
+                      pendingDeleteTaskId() === task.id
+                        ? ('tasks.confirmDeleteAria' | translate)
+                        : ('tasks.deleteAria' | translate)
                     "
                   >
                     @if (pendingDeleteTaskId() === task.id) {
@@ -145,17 +143,17 @@
           </div>
         }
         @if (!allTasksCompleted() && tasks().length > 0) {
-          <p class="mt-3 border-t border-[rgba(100,120,160,0.16)] px-0.5 pt-2.5 text-center text-[12.5px] leading-[1.45] text-[rgba(176,191,220,0.72)]">
+          <p class="mt-3 lg:mt-2 border-t border-[rgba(100,120,160,0.16)] px-0.5 pt-2.5 lg:pt-2 text-center text-[12.5px] lg:text-[11px] leading-[1.45] lg:leading-snug text-[rgba(176,191,220,0.72)]">
             {{ 'tasks.progressHint' | translate }}
           </p>
         }
         @if (allTasksCompleted() && tasks().length > 0) {
-          <div class="mt-[18px] border-t border-[rgba(100,120,160,0.2)] pt-[18px]">
-            <p class="mb-3 text-center text-sm font-medium text-[rgba(210,220,245,0.8)]">{{ 'tasks.greatProgress' | translate }}</p>
+          <div class="share-completion-block mt-[18px] border-t border-[rgba(100,120,160,0.2)] pt-[18px]">
+            <p class="share-completion-lead mb-3 text-center text-sm font-medium text-[rgba(210,220,245,0.8)]">{{ 'tasks.greatProgress' | translate }}</p>
             <button
               type="button"
               (click)="emitShareSummary()"
-              class="inline-flex h-[52px] sm:h-[58px] w-full items-center justify-center gap-2.5 rounded-xl sm:rounded-2xl border border-[rgba(117,205,255,0.28)] bg-[linear-gradient(180deg,rgba(77,178,255,0.25)_0%,rgba(58,117,225,0.2)_100%)] text-[14px] sm:text-[15px] font-semibold text-[rgba(245,248,255,0.94)] shadow-[0_12px_30px_rgba(57,136,255,0.1),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-[8px] transition-all duration-200 hover:-translate-y-px hover:border-[rgba(117,225,255,0.34)] hover:shadow-[0_16px_34px_rgba(57,136,255,0.14),0_0_18px_rgba(72,216,255,0.1)]"
+              class="share-summary-btn inline-flex h-[52px] sm:h-[58px] w-full items-center justify-center gap-2.5 rounded-xl sm:rounded-2xl border border-[rgba(117,205,255,0.28)] bg-[linear-gradient(180deg,rgba(77,178,255,0.25)_0%,rgba(58,117,225,0.2)_100%)] text-[14px] sm:text-[15px] font-semibold text-[rgba(245,248,255,0.94)] shadow-[0_12px_30px_rgba(57,136,255,0.1),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-[8px] transition-all duration-200 hover:-translate-y-px hover:border-[rgba(117,225,255,0.34)] hover:shadow-[0_16px_34px_rgba(57,136,255,0.14),0_0_18px_rgba(72,216,255,0.1)]"
             >
               <span class="pi pi-share-alt"></span>
               {{ 'tasks.shareSummary' | translate }}

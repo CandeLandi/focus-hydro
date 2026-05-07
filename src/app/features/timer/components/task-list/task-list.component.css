@@ -1,3 +1,9 @@
+.task-row-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .task-input,
 :host ::ng-deep input.task-input.p-inputtext,
 :host ::ng-deep input.task-input {
@@ -60,12 +66,78 @@
   }
 }
 
+@media (min-width: 1024px) {
+  .task-input,
+  :host ::ng-deep input.task-input.p-inputtext,
+  :host ::ng-deep input.task-input {
+    height: 42px !important;
+    min-height: 42px;
+    padding: 0 13px;
+    font-size: 13px;
+    border-radius: 11px;
+  }
+
+  .add-task-btn {
+    height: 42px;
+    width: 42px;
+    border-radius: 11px;
+  }
+
+  .share-completion-block {
+    margin-top: 0.65rem;
+    padding-top: 0.65rem;
+  }
+
+  .share-completion-lead {
+    margin-bottom: 0.45rem;
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
+
+  .share-summary-btn {
+    height: 2.5rem !important;
+    min-height: 2.5rem;
+    gap: 0.45rem;
+    border-radius: 10px;
+    font-size: 0.8125rem;
+    box-shadow:
+      0 6px 14px rgba(57, 136, 255, 0.07),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .share-summary-btn:hover {
+    box-shadow:
+      0 8px 18px rgba(57, 136, 255, 0.1),
+      0 0 12px rgba(72, 216, 255, 0.06);
+  }
+
+  .share-summary-btn .pi {
+    font-size: 0.8125rem;
+  }
+
+  .task-action-btn {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 0.5rem;
+  }
+}
+
 .task-actions {
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
   flex-shrink: 0;
   padding-left: 0.35rem;
+  align-self: start;
+  margin-top: 0.06rem;
+}
+
+@media (min-width: 1024px) {
+  .task-actions {
+    gap: 0.4rem;
+    padding-left: 0.2rem;
+    margin-top: 0.1rem;
+  }
 }
 
 .task-action-btn {
@@ -98,6 +170,19 @@
 .task-delete-btn {
   color: rgba(248, 113, 113, 0.72);
   opacity: 0.82;
+}
+
+.task-delete-btn--confirm {
+  opacity: 1 !important;
+  color: rgba(252, 165, 165, 0.96) !important;
+  border-color: rgba(248, 113, 113, 0.55) !important;
+  background: rgba(239, 68, 68, 0.14) !important;
+}
+
+.task-delete-btn--confirm:hover {
+  color: rgba(254, 226, 226, 0.98) !important;
+  border-color: rgba(252, 165, 165, 0.65) !important;
+  background: rgba(239, 68, 68, 0.22) !important;
 }
 
 .group:hover .task-delete-btn,

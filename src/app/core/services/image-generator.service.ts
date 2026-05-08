@@ -41,25 +41,27 @@ const H = 1200;
 /** Vertical rhythm: header → hero → title → subtitle/attribution → stats → hydration → footer */
 const L = {
   marginX: 80,
-  /** Space from canvas top to hero center (hero sits higher → more room below) */
-  heroCy: 198,
+  /** Hero vertical center; tuned with footer-from-content so top/bottom margins feel even */
+  heroCy: 210,
   heroROuter: 104,
   heroRInner: 78,
   /** Pixels below lowest hero paint before title baseline */
-  gapHeroToTitle: 78,
+  gapHeroToTitle: 52,
   titleFont: '800 64px Inter, system-ui, -apple-system, sans-serif',
-  gapTitleToSubtitle: 36,
+  gapTitleToSubtitle: 32,
   subtitleFont: '500 25px Inter, system-ui, -apple-system, sans-serif',
-  gapSubtitleToAttribution: 28,
+  gapSubtitleToAttribution: 22,
   attributionFont: '500 17px Inter, system-ui, -apple-system, sans-serif',
-  gapAttributionBlockToStats: 48,
+  gapAttributionBlockToStats: 34,
   /** Stats card geometry */
-  cardH: 158,
+  cardH: 148,
   cardRadius: 18,
-  gapStatsToHydration: 44,
+  gapStatsToHydration: 26,
   hydrationFont: '500 26px Inter, system-ui, -apple-system, sans-serif',
-  /** Footer anchored from bottom */
-  footerBottomPad: 88
+  /** Space between hydration block bottom and footer stack top */
+  gapHydrationToFooter: 32,
+  /** Minimum gap from last painted line (URL) to canvas bottom */
+  footerCanvasBottomPad: 52
 };
 
 @Injectable({
@@ -90,9 +92,9 @@ export class ImageGeneratorService {
     y += L.gapAttributionBlockToStats;
 
     const afterCard = this.drawStatsCard(ctx, stats, y, copy);
-    this.drawHydrationMessageCentered(ctx, afterCard + L.gapStatsToHydration, copy);
+    const hydrationBottom = this.drawHydrationMessageCentered(ctx, afterCard + L.gapStatsToHydration, copy);
 
-    await this.drawFooterCentered(ctx, copy, L.footerBottomPad);
+    await this.drawFooterBelowContent(ctx, copy, hydrationBottom + L.gapHydrationToFooter);
 
     return canvas.toDataURL('image/png');
   }
@@ -167,7 +169,7 @@ export class ImageGeneratorService {
     ctx.fillStyle = COL.cyanBright;
     ctx.shadowColor = 'rgba(34, 211, 238, 0.22)';
     ctx.shadowBlur = 8;
-    ctx.fillText(hashtag, W - L.marginX, 56);
+    ctx.fillText(hashtag, W - L.marginX, 48);
     ctx.restore();
   }
 
@@ -235,7 +237,7 @@ export class ImageGeneratorService {
     ctx.restore();
 
     const ringBottom = cy + rOuter;
-    return ringBottom + 26;
+    return ringBottom + 18;
   }
 
   private drawSparkle(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, fill: string): void {
@@ -312,7 +314,7 @@ export class ImageGeneratorService {
       nextY = attrBaseline;
     }
 
-    return nextY + 22;
+    return nextY + 16;
   }
 
   private roundedRectStrokeFill(
@@ -376,7 +378,7 @@ export class ImageGeneratorService {
     ctx.lineTo(mid2, y + cardH - 28);
     ctx.stroke();
 
-    const iconY = y + 44;
+    const iconY = y + 40;
 
     const centres = [
       {
@@ -402,14 +404,14 @@ export class ImageGeneratorService {
       c.drawIcon();
     });
 
-    const valueBaseline = y + 118;
+    const valueBaseline = y + 108;
     ctx.font = '800 46px Inter, system-ui, -apple-system, sans-serif';
     ctx.fillStyle = COL.white;
     ctx.fillText(String(centres[0].tasks), centres[0].xc, valueBaseline);
     ctx.fillText(stats.totalFocusTime, centres[1].xc, valueBaseline);
     ctx.fillText(`${stats.completionPercentage}%`, centres[2].xc, valueBaseline);
 
-    const labelBaseline = y + 146;
+    const labelBaseline = y + 134;
     ctx.font = '600 11px Inter, system-ui, -apple-system, sans-serif';
     ctx.fillStyle = COL.muted2;
     ctx.letterSpacing = '0.04em';
@@ -474,8 +476,8 @@ export class ImageGeneratorService {
     ctx.fill();
   }
 
-  /** One centered phrase under stats; no bottle divider noise */
-  private drawHydrationMessageCentered(ctx: CanvasRenderingContext2D, topY: number, copy: ShareCardCopy): void {
+  /** One centered phrase under stats; returns bottom Y of painted content (for stacking footer without a dead zone). */
+  private drawHydrationMessageCentered(ctx: CanvasRenderingContext2D, topY: number, copy: ShareCardCopy): number {
     const cx = W / 2;
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'left';
@@ -485,7 +487,7 @@ export class ImageGeneratorService {
     const hi = copy.hydrationHighlight;
     const wLead = ctx.measureText(lead).width;
     const wHi = ctx.measureText(hi).width;
-    const midY = topY + 22;
+    const midY = topY + 18;
 
     ctx.shadowBlur = 0;
     let x = cx - (wLead + wHi) / 2;
@@ -496,43 +498,57 @@ export class ImageGeneratorService {
     ctx.fillStyle = COL.cyan;
     ctx.fillText(hi, x, midY);
 
+    const mainBottom = midY + 15;
+
     ctx.textBaseline = 'alphabetic';
     ctx.textAlign = 'left';
 
     const tag = copy.hydrationTagline?.trim();
     if (!tag) {
-      return;
+      return mainBottom;
     }
     ctx.font = '600 11px Inter, system-ui, -apple-system, sans-serif';
     ctx.fillStyle = COL.muted2;
     ctx.textAlign = 'center';
-    ctx.fillText(tag, cx, midY + 36);
+    const tagBaseline = midY + 30;
+    ctx.fillText(tag, cx, tagBaseline);
     ctx.textAlign = 'left';
+    return tagBaseline + 14;
   }
 
-  /** Centered brand stack above bottom safe zone */
-  private async drawFooterCentered(ctx: CanvasRenderingContext2D, copy: ShareCardCopy, bottomPad: number): Promise<void> {
+  /** Brand stack placed directly under main content so the canvas is not bottom-heavy. */
+  private async drawFooterBelowContent(ctx: CanvasRenderingContext2D, copy: ShareCardCopy, desiredTop: number): Promise<void> {
     const cx = W / 2;
+    const logoSize = 36;
+    const gapLogoToBrand = 10;
+    const gapBrandToTagline = 22;
+    const gapTaglineToUrl = 20;
 
-    try {
-      const logo = await this.loadImage('/images/logo-hydrofocus.png');
-      const logoSize = 36;
-      const logoTop = H - bottomPad - 168;
-      ctx.drawImage(logo, cx - logoSize / 2, logoTop, logoSize, logoSize);
-    } catch {
-      const markY = H - bottomPad - 148;
-      this.drawSparkle(ctx, cx, markY, 10, 'rgba(34,211,238,0.35)');
-    }
-
-    const brandBaseline = H - bottomPad - 118;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
     ctx.font = '750 28px Inter, system-ui, -apple-system, sans-serif';
+
     const partFocus = 'Focus';
     const partFlow = 'Flow';
     const focusFlowGap = 10;
     const wFocus = ctx.measureText(partFocus).width;
     const wFlow = ctx.measureText(partFlow).width;
+
+    const footerStackHeight = logoSize + gapLogoToBrand + 28 + gapBrandToTagline + 13 + gapTaglineToUrl + 12;
+    let logoTop = desiredTop;
+    const minTop = L.marginX * 0.5;
+    const maxTop = H - L.footerCanvasBottomPad - footerStackHeight;
+    if (logoTop < minTop) logoTop = minTop;
+    if (logoTop > maxTop) logoTop = Math.max(minTop, maxTop);
+
+    try {
+      const logo = await this.loadImage('/images/logo-hydrofocus.png');
+      ctx.drawImage(logo, cx - logoSize / 2, logoTop, logoSize, logoSize);
+    } catch {
+      this.drawSparkle(ctx, cx, logoTop + logoSize / 2, 10, 'rgba(34,211,238,0.35)');
+    }
+
+    const brandBaseline = logoTop + logoSize + gapLogoToBrand;
     const pairW = wFocus + focusFlowGap + wFlow;
     const pairLeft = cx - pairW / 2;
 
@@ -550,13 +566,13 @@ export class ImageGeneratorService {
     ctx.textAlign = 'center';
     ctx.font = '500 13px Inter, system-ui, -apple-system, sans-serif';
     ctx.fillStyle = 'rgba(148, 176, 210, 0.72)';
-    ctx.fillText(copy.footerTagline, cx, brandBaseline + 30);
+    ctx.fillText(copy.footerTagline, cx, brandBaseline + gapBrandToTagline);
 
     const url = 'focusflow-pomodoro.com';
     ctx.font = '600 18px Inter, system-ui, -apple-system, sans-serif';
     ctx.fillStyle = 'rgba(186, 210, 238, 0.88)';
     ctx.textBaseline = 'middle';
-    ctx.fillText(url, cx, H - bottomPad - 42);
+    ctx.fillText(url, cx, brandBaseline + gapBrandToTagline + 13 + gapTaglineToUrl);
     ctx.textBaseline = 'alphabetic';
     ctx.textAlign = 'left';
   }

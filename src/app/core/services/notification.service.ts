@@ -272,23 +272,29 @@ export class NotificationService {
   }
 
   /**
-   * Reproduce un sonido de finalización (doble tono suave tipo “listo”)
+   * Reproduce un sonido de finalización más notorio (3 pulsos cortos).
    */
   private playCompletionSound(): void {
-    this.playChime([800, 1000], 0.25, 0.08);
+    this.playChime([880, 1040, 1240], 0.19, 0.06, 0.42, 'triangle');
   }
 
   /**
-   * Reproduce un sonido para el descanso (tono único más suave)
+   * Reproduce un sonido para el descanso (3 pulsos suaves).
    */
   private playBreakSound(): void {
-    this.playTone(640, 0.28, 'sine');
+    this.playChime([620, 700, 620], 0.14, 0.05, 0.3, 'sine');
   }
 
   /**
    * Reproduce una secuencia de tonos (ej. dos notas para “sesión lista”)
    */
-  private playChime(frequencies: number[], durationPerNote: number, gapSeconds: number): void {
+  private playChime(
+    frequencies: number[],
+    durationPerNote: number,
+    gapSeconds: number,
+    peakGain: number = 0.25,
+    waveType: OscillatorType = 'sine'
+  ): void {
     const ctx = this.getAudioContext();
     if (!ctx) return;
     try {
@@ -299,12 +305,12 @@ export class NotificationService {
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.frequency.value = freq;
-        osc.type = 'sine';
+        osc.type = waveType;
         gain.gain.setValueAtTime(0, time);
-        gain.gain.linearRampToValueAtTime(0.25, time + 0.02);
-        gain.gain.linearRampToValueAtTime(0, time + durationPerNote);
+        gain.gain.linearRampToValueAtTime(peakGain, time + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + durationPerNote);
         osc.start(time);
-        osc.stop(time + durationPerNote);
+        osc.stop(time + durationPerNote + 0.01);
         time += durationPerNote + gapSeconds;
       }
     } catch (error) {

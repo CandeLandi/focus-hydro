@@ -41,22 +41,22 @@ const H = 1200;
 /** Vertical rhythm: header → hero → title → subtitle/attribution → stats → hydration → footer */
 const L = {
   marginX: 64,
-  heroCy: 220,
-  heroROuter: 94,
-  heroRInner: 68,
-  gapHeroToTitle: 54,
-  titleFont: '800 60px Inter, system-ui, -apple-system, sans-serif',
-  gapTitleToSubtitle: 34,
-  subtitleFont: '500 25px Inter, system-ui, -apple-system, sans-serif',
-  gapSubtitleToAttribution: 26,
-  attributionFont: '500 17px Inter, system-ui, -apple-system, sans-serif',
-  gapAttributionBlockToStats: 44,
-  cardH: 154,
+  heroCy: 205,
+  heroROuter: 108,
+  heroRInner: 78,
+  gapHeroToTitle: 56,
+  titleFont: '800 72px Inter, system-ui, -apple-system, sans-serif',
+  gapTitleToSubtitle: 38,
+  subtitleFont: '500 29px Inter, system-ui, -apple-system, sans-serif',
+  gapSubtitleToAttribution: 30,
+  attributionFont: '500 19px Inter, system-ui, -apple-system, sans-serif',
+  gapAttributionBlockToStats: 46,
+  cardH: 184,
   cardRadius: 18,
-  gapStatsToHydration: 40,
-  hydrationBlockH: 78,
-  hydrationFont: '500 26px Inter, system-ui, -apple-system, sans-serif',
-  footerMinTop: 846,
+  gapStatsToHydration: 42,
+  hydrationBlockH: 92,
+  hydrationFont: '500 29px Inter, system-ui, -apple-system, sans-serif',
+  footerMinTop: 878,
   footerCanvasBottomPad: 64
 };
 
@@ -90,7 +90,7 @@ export class ImageGeneratorService {
     const afterCard = this.drawStatsCard(ctx, stats, y, copy);
     const hydrationBottom = this.drawHydrationMessageCentered(ctx, afterCard + L.gapStatsToHydration, copy);
 
-    await this.drawFooterBelowContent(ctx, copy, hydrationBottom + 48);
+    await this.drawFooterBelowContent(ctx, copy, hydrationBottom + 54);
 
     return canvas.toDataURL('image/png');
   }
@@ -374,7 +374,7 @@ export class ImageGeneratorService {
     ctx.lineTo(mid2, y + cardH - 28);
     ctx.stroke();
 
-    const iconY = y + 42;
+    const iconY = y + 52;
 
     const centres = [
       {
@@ -400,15 +400,15 @@ export class ImageGeneratorService {
       c.drawIcon();
     });
 
-    const valueBaseline = y + 112;
-    ctx.font = '800 46px Inter, system-ui, -apple-system, sans-serif';
+    const valueBaseline = y + 130;
+    ctx.font = '800 58px Inter, system-ui, -apple-system, sans-serif';
     ctx.fillStyle = COL.white;
     ctx.fillText(String(centres[0].tasks), centres[0].xc, valueBaseline);
     ctx.fillText(stats.totalFocusTime, centres[1].xc, valueBaseline);
     ctx.fillText(`${stats.completionPercentage}%`, centres[2].xc, valueBaseline);
 
-    const labelBaseline = y + 138;
-    ctx.font = '600 11px Inter, system-ui, -apple-system, sans-serif';
+    const labelBaseline = y + 160;
+    ctx.font = '600 13px Inter, system-ui, -apple-system, sans-serif';
     ctx.fillStyle = COL.muted2;
     ctx.letterSpacing = '0.04em';
     ctx.fillText(centres[0].label, centres[0].xc, labelBaseline);
@@ -421,12 +421,12 @@ export class ImageGeneratorService {
 
   private drawTargetIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number): void {
     ctx.save();
-    const g = ctx.createLinearGradient(cx - 20, cy - 16, cx + 20, cy + 16);
+    const g = ctx.createLinearGradient(cx - 24, cy - 20, cx + 24, cy + 20);
     g.addColorStop(0, COL.cyan);
     g.addColorStop(1, COL.purple);
     ctx.strokeStyle = g;
     ctx.lineWidth = 2;
-    for (let rr = 18; rr >= 7; rr -= 11) {
+    for (let rr = 22; rr >= 8; rr -= 14) {
       ctx.beginPath();
       ctx.arc(cx, cy, rr, 0, Math.PI * 2);
       ctx.stroke();
@@ -436,45 +436,45 @@ export class ImageGeneratorService {
 
   private drawClockIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number): void {
     ctx.strokeStyle = 'rgba(94,239,255,0.85)';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.4;
     ctx.beginPath();
-    ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+    ctx.arc(cx, cy, 22, 0, Math.PI * 2);
     ctx.stroke();
     ctx.lineCap = 'round';
     ctx.beginPath();
     ctx.moveTo(cx, cy);
-    ctx.lineTo(cx, cy - 14);
-    ctx.lineTo(cx + 8, cy - 2);
+    ctx.lineTo(cx, cy - 17);
+    ctx.lineTo(cx + 10, cy - 2);
     ctx.stroke();
   }
 
   private drawTrendIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number): void {
-    const g = ctx.createLinearGradient(cx - 26, cy, cx + 26, cy);
+    const g = ctx.createLinearGradient(cx - 32, cy, cx + 32, cy);
     g.addColorStop(0, COL.cyan);
     g.addColorStop(1, COL.purple);
     ctx.strokeStyle = g;
-    ctx.lineWidth = 2.5;
+    ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    const y0 = cy + 12;
+    const y0 = cy + 14;
     ctx.beginPath();
-    ctx.moveTo(cx - 22, y0 + 2);
-    ctx.lineTo(cx - 8, y0 - 12);
-    ctx.lineTo(cx + 6, y0);
-    ctx.lineTo(cx + 24, y0 - 22);
+    ctx.moveTo(cx - 28, y0 + 2);
+    ctx.lineTo(cx - 10, y0 - 15);
+    ctx.lineTo(cx + 8, y0);
+    ctx.lineTo(cx + 30, y0 - 26);
     ctx.stroke();
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.moveTo(cx + 22, y0 - 22);
-    ctx.lineTo(cx + 24, y0 - 14);
-    ctx.lineTo(cx + 16, y0 - 18);
+    ctx.moveTo(cx + 28, y0 - 26);
+    ctx.lineTo(cx + 30, y0 - 16);
+    ctx.lineTo(cx + 20, y0 - 21);
     ctx.closePath();
     ctx.fill();
   }
 
   private drawHydrationMessageCentered(ctx: CanvasRenderingContext2D, topY: number, copy: ShareCardCopy): number {
     const cx = W / 2;
-    const blockW = 760;
+    const blockW = 820;
     const blockH = L.hydrationBlockH;
     const blockX = cx - blockW / 2;
     const blockY = topY;
@@ -500,7 +500,7 @@ export class ImageGeneratorService {
     const wLead = ctx.measureText(lead).width;
     const wHi = ctx.measureText(hi).width;
     const hasTagline = Boolean(copy.hydrationTagline?.trim());
-    const midY = blockY + (hasTagline ? 32 : blockH / 2);
+    const midY = blockY + (hasTagline ? 38 : blockH / 2);
 
     ctx.shadowBlur = 0;
     let x = cx - (wLead + wHi) / 2;
@@ -520,10 +520,10 @@ export class ImageGeneratorService {
     if (!tag) {
       return blockY + blockH;
     }
-    ctx.font = '600 11px Inter, system-ui, -apple-system, sans-serif';
+    ctx.font = '600 13px Inter, system-ui, -apple-system, sans-serif';
     ctx.fillStyle = COL.muted2;
     ctx.textAlign = 'center';
-    const tagBaseline = midY + 27;
+    const tagBaseline = midY + 31;
     ctx.fillText(tag, cx, tagBaseline);
     ctx.textAlign = 'left';
     return Math.max(mainBottom, blockY + blockH);
@@ -532,14 +532,17 @@ export class ImageGeneratorService {
   /** Brand stack placed directly under main content so the canvas is not bottom-heavy. */
   private async drawFooterBelowContent(ctx: CanvasRenderingContext2D, copy: ShareCardCopy, preferredTop: number): Promise<void> {
     const cx = W / 2;
-    const logoSize = 44;
-    const gapLogoToBrand = 12;
-    const gapBrandToTagline = 24;
-    const gapTaglineToUrl = 24;
+    const logoSize = 54;
+    const gapLogoToBrandTextTop = 20;
+    const brandFontPx = 34;
+    const taglineFontPx = 15;
+    const urlFontPx = 20;
+    const gapBrandToTagline = 30;
+    const gapTaglineToUrl = 34;
 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
-    ctx.font = '750 28px Inter, system-ui, -apple-system, sans-serif';
+    ctx.font = `750 ${brandFontPx}px Inter, system-ui, -apple-system, sans-serif`;
 
     const partFocus = 'Focus';
     const partFlow = 'Flow';
@@ -547,10 +550,13 @@ export class ImageGeneratorService {
     const wFocus = ctx.measureText(partFocus).width;
     const wFlow = ctx.measureText(partFlow).width;
 
-    const maxLogoTop = H - L.footerCanvasBottomPad - 118;
+    const footerStackHeight =
+      logoSize + gapLogoToBrandTextTop + brandFontPx + gapBrandToTagline + taglineFontPx + gapTaglineToUrl + urlFontPx;
+    const maxLogoTop = H - L.footerCanvasBottomPad - footerStackHeight;
     const logoTop = Math.min(Math.max(preferredTop, L.footerMinTop), maxLogoTop);
-    const brandBaseline = logoTop + logoSize + gapLogoToBrand;
-    const urlY = brandBaseline + gapBrandToTagline + 13 + gapTaglineToUrl;
+    const brandBaseline = logoTop + logoSize + gapLogoToBrandTextTop + brandFontPx;
+    const taglineBaseline = brandBaseline + gapBrandToTagline;
+    const urlY = taglineBaseline + taglineFontPx + gapTaglineToUrl;
 
     try {
       const logo = await this.loadImage('/images/logo-hydrofocus.svg');
@@ -574,12 +580,12 @@ export class ImageGeneratorService {
     ctx.fillText(partFlow, flowX, brandBaseline);
 
     ctx.textAlign = 'center';
-    ctx.font = '500 13px Inter, system-ui, -apple-system, sans-serif';
+    ctx.font = `500 ${taglineFontPx}px Inter, system-ui, -apple-system, sans-serif`;
     ctx.fillStyle = 'rgba(148, 176, 210, 0.72)';
-    ctx.fillText(copy.footerTagline, cx, brandBaseline + gapBrandToTagline);
+    ctx.fillText(copy.footerTagline, cx, taglineBaseline);
 
     const url = 'focusflow-pomodoro.com';
-    ctx.font = '600 18px Inter, system-ui, -apple-system, sans-serif';
+    ctx.font = `600 ${urlFontPx}px Inter, system-ui, -apple-system, sans-serif`;
     ctx.fillStyle = 'rgba(186, 210, 238, 0.88)';
     ctx.textBaseline = 'middle';
     ctx.fillText(url, cx, urlY);

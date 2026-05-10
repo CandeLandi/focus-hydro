@@ -37,8 +37,8 @@ describe('ImageGeneratorService', () => {
           provide: TranslateService,
           useValue: {
             instant: (key: string, params?: Record<string, string>): string => {
-              if (key === 'shareCard.progressBy' && params?.name) {
-                return `Progreso de ${params.name}`;
+              if (key === 'shareCard.progressBy' && params?.['name']) {
+                return `Progreso de ${params['name']}`;
               }
               return SHARE_CARD_ES[key] ?? key;
             }

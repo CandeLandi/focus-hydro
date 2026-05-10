@@ -267,7 +267,18 @@ describe('TimerComponent', () => {
     expect(daily.completedSessions()).toBe(1);
   });
 
-  it('saves valid settings only while paused', () => {
+  it('pauses timer automatically when opening settings', () => {
+    component.isRunning.set(true);
+    component.timeRemaining.set(777);
+
+    component.openSettingsDialog();
+
+    expect(component.isRunning()).toBeFalse();
+    expect(component.timeRemaining()).toBe(777);
+    expect(component.settingsVisible()).toBeTrue();
+  });
+
+  it('saves valid settings', () => {
     component.settingsFocusMinutes.set(45);
     component.settingsBreakMinutes.set(8);
 

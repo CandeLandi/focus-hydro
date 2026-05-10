@@ -3,6 +3,7 @@ import { HydroTask, DailyState, getTodayDateKey } from '../../shared/models/dail
 
 const STORAGE_KEY = 'hydrofocus-daily';
 const TIMER_CONFIG_KEY = 'hydrofocus-timer-config';
+const TIMER_PERSISTED_STATE_KEY = 'hydrofocus-timer-state';
 const DEFAULT_FOCUS_MINUTES = 25;
 
 @Injectable({ providedIn: 'root' })
@@ -43,6 +44,10 @@ export class HydroFocusDailyService {
       if (parsed.dateKey !== today) {
         this.state.set(this.getInitialState());
         this.persist();
+        try {
+          localStorage.removeItem(TIMER_PERSISTED_STATE_KEY);
+        } catch {
+        }
         return;
       }
       this.correctFocusMinutesIfNeeded(parsed);

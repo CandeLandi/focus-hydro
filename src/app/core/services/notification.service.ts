@@ -40,6 +40,8 @@ function isCoarsePointerDevice(): boolean {
 export class NotificationService {
   private readonly SETTINGS_KEY = 'hydrofocus-notification-settings';
   private readonly TIP_AUTO_HIDE_MS = 5200;
+  private readonly TRANSITION_SOUND_REPEATS = 2;
+  private readonly TRANSITION_REPEAT_GAP_SECONDS = 0.14;
   private tipAutoHideTimer: ReturnType<typeof setTimeout> | null = null;
 
   private settings = this.loadSettings();
@@ -113,7 +115,7 @@ export class NotificationService {
 
     if (this.settings.soundEnabled) {
       try {
-        this.playCompletionSound();
+        await this.playCompletionSound();
       } catch {
         /* Autoplay / context suspendido: no insistir */
       }
@@ -146,7 +148,7 @@ export class NotificationService {
 
     if (this.settings.soundEnabled) {
       try {
-        this.playBreakSound();
+        await this.playBreakSound();
       } catch {
         /* Autoplay / context suspendido */
       }
@@ -274,57 +276,132 @@ export class NotificationService {
   /**
    * Reproduce un sonido de finalización más notorio (3 pulsos cortos).
    */
-  private playCompletionSound(): void {
-    this.playChime([880, 1040, 1240], 0.19, 0.06, 0.42, 'triangle');
+  private async playCompletionSound(): Promise<void> {
+    const played = await this.playChime(
+      [880, 1040, 1240],
+      0.2,
+      0.06,
+      0.62,
+      'triangle',
+      this.TRANSITION_SOUND_REPEATS,
+      this.TRANSITION_REPEAT_GAP_SECONDS
+    );
+    if (!played) {
+      this.playToneFallbackSequence(
+        [880, 1040, 1240],
+        200,
+        70,
+        0.56,
+        'triangle',
+        this.TRANSITION_SOUND_REPEATS,
+        180
+      );
+    }
   }
 
   /**
    * Reproduce un sonido para el descanso (3 pulsos suaves).
    */
-  private playBreakSound(): void {
-    this.playChime([620, 700, 620], 0.14, 0.05, 0.3, 'sine');
+  private async playBreakSound(): Promise<void> {
+    const played = await this.playChime(
+      [620, 700, 620],
+      0.16,
+      0.05,
+      0.48,
+      'sine',
+      this.TRANSITION_SOUND_REPEATS,
+      this.TRANSITION_REPEAT_GAP_SECONDS
+    );
+    if (!played) {
+      this.playToneFallbackSequence(
+        [620, 700, 620],
+        170,
+        60,
+        0.42,
+        'sine',
+        this.TRANSITION_SOUND_REPEATS,
+        170
+      );
+    }
   }
 
   /**
    * Reproduce una secuencia de tonos (ej. dos notas para “sesión lista”)
    */
-  private playChime(
+  private async playChime(
     frequencies: number[],
     durationPerNote: number,
     gapSeconds: number,
     peakGain: number = 0.25,
-    waveType: OscillatorType = 'sine'
-  ): void {
-    const ctx = this.getAudioContext();
-    if (!ctx) return;
+    waveType: OscillatorType = 'sine',
+    repeats: number = 1,
+    repeatGapSeconds: number = 0.12
+  ): Promise<boolean> {
+    const ctx = await this.getAudioContextReady();
+    if (!ctx) return false;
     try {
-      let time = ctx.currentTime;
-      for (const freq of frequencies) {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.frequency.value = freq;
-        osc.type = waveType;
-        gain.gain.setValueAtTime(0, time);
-        gain.gain.linearRampToValueAtTime(peakGain, time + 0.015);
-        gain.gain.exponentialRampToValueAtTime(0.0001, time + durationPerNote);
-        osc.start(time);
-        osc.stop(time + durationPerNote + 0.01);
-        time += durationPerNote + gapSeconds;
+      let time = ctx.currentTime + 0.02;
+      for (let cycle = 0; cycle < Math.max(1, repeats); cycle++) {
+        for (const freq of frequencies) {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.frequency.value = freq;
+          osc.type = waveType;
+          gain.gain.setValueAtTime(0, time);
+          gain.gain.linearRampToValueAtTime(peakGain, time + 0.015);
+          gain.gain.linearRampToValueAtTime(0, time + durationPerNote);
+          osc.start(time);
+          osc.stop(time + durationPerNote + 0.01);
+          time += durationPerNote + gapSeconds;
+        }
+        if (cycle < repeats - 1) {
+          time += repeatGapSeconds;
+        }
       }
+      return true;
     } catch (error) {
       console.error('[Focus and Hydrate] Error al reproducir chime:', error);
+      return false;
+    }
+  }
+
+  private playToneFallbackSequence(
+    frequencies: number[],
+    durationMs: number,
+    gapMs: number,
+    gain: number,
+    type: OscillatorType,
+    repeats: number = 1,
+    repeatGapMs: number = 140
+  ): void {
+    const sequenceDurationMs = frequencies.length * durationMs + Math.max(0, frequencies.length - 1) * gapMs;
+    for (let cycle = 0; cycle < Math.max(1, repeats); cycle++) {
+      const cycleOffset = cycle * (sequenceDurationMs + repeatGapMs);
+      frequencies.forEach((freq, index) => {
+        const delay = cycleOffset + index * (durationMs + gapMs);
+        setTimeout(() => this.playTone(freq, durationMs / 1000, type, gain), delay);
+      });
     }
   }
 
   /**
    * Genera y reproduce un tono usando Web Audio API
    */
-  private playTone(frequency: number, duration: number, type: OscillatorType = 'sine'): void {
+  private playTone(
+    frequency: number,
+    duration: number,
+    type: OscillatorType = 'sine',
+    peakGain: number = 0.28
+  ): void {
     const audioContext = this.getAudioContext();
     if (!audioContext) return;
     try {
+      if (audioContext.state === 'closed') return;
+      if (audioContext.state === 'suspended') {
+        void audioContext.resume();
+      }
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
 
@@ -336,7 +413,7 @@ export class NotificationService {
 
       const t = audioContext.currentTime;
       gainNode.gain.setValueAtTime(0, t);
-      gainNode.gain.linearRampToValueAtTime(0.28, t + 0.02);
+      gainNode.gain.linearRampToValueAtTime(peakGain, t + 0.02);
       gainNode.gain.linearRampToValueAtTime(0, t + duration);
 
       oscillator.start(t);
@@ -354,10 +431,29 @@ export class NotificationService {
         if (!Ctor) return null;
         this.audioContext = new Ctor();
       }
-      if (this.audioContext.state === 'suspended') {
-        this.audioContext.resume();
+      return this.audioContext;
+    } catch {
+      return null;
+    }
+  }
+
+  private async getAudioContextReady(): Promise<AudioContext | null> {
+    let ctx = this.getAudioContext();
+    if (!ctx) return null;
+    try {
+      if (ctx.state === 'closed') {
+        this.audioContext = null;
+        ctx = this.getAudioContext();
+        if (!ctx) return null;
       }
-      return this.audioContext.state === 'running' ? this.audioContext : null;
+      if (ctx.state === 'suspended') {
+        await ctx.resume();
+        if (ctx.state === 'suspended') {
+          await new Promise(resolve => setTimeout(resolve, 60));
+          await ctx.resume();
+        }
+      }
+      return ctx.state === 'running' ? ctx : null;
     } catch {
       return null;
     }

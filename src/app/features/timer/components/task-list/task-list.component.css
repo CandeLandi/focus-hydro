@@ -2,7 +2,6 @@
   min-width: 0;
   overflow-wrap: anywhere;
   word-break: break-word;
-  /* Misma altura mínima que .task-action-btn: centra el texto con check/borrar en una línea */
   display: flex;
   align-items: center;
   min-height: 2rem;

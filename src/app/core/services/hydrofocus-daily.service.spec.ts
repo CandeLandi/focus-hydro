@@ -37,6 +37,7 @@ describe('HydroFocusDailyService', () => {
       summaryGenerated: true
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(staleState));
+    localStorage.setItem('hydrofocus-timer-state', '{"mode":"focus","isRunning":true}');
 
     const service = createService();
 
@@ -44,6 +45,7 @@ describe('HydroFocusDailyService', () => {
     expect(service.tasks()).toEqual([]);
     expect(service.completedSessions()).toBe(0);
     expect(service.summaryGenerated()).toBeFalse();
+    expect(localStorage.getItem('hydrofocus-timer-state')).toBeNull();
   });
 
   it('recovers from invalid stored JSON', () => {

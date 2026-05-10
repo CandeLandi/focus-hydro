@@ -41,7 +41,6 @@ const H = 1200;
 /** Vertical rhythm: header → hero → title → subtitle/attribution → stats → hydration → footer */
 const L = {
   marginX: 80,
-  /** Hero vertical center; tuned with footer-from-content so top/bottom margins feel even */
   heroCy: 210,
   heroROuter: 104,
   heroRInner: 78,
@@ -58,9 +57,7 @@ const L = {
   cardRadius: 18,
   gapStatsToHydration: 26,
   hydrationFont: '500 26px Inter, system-ui, -apple-system, sans-serif',
-  /** Space between hydration block bottom and footer stack top */
   gapHydrationToFooter: 32,
-  /** Minimum gap from last painted line (URL) to canvas bottom */
   footerCanvasBottomPad: 52
 };
 
@@ -476,7 +473,6 @@ export class ImageGeneratorService {
     ctx.fill();
   }
 
-  /** One centered phrase under stats; returns bottom Y of painted content (for stacking footer without a dead zone). */
   private drawHydrationMessageCentered(ctx: CanvasRenderingContext2D, topY: number, copy: ShareCardCopy): number {
     const cx = W / 2;
     ctx.textBaseline = 'middle';

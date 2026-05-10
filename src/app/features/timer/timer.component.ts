@@ -15,6 +15,7 @@ import { MiniTimerPictureInPictureService, MiniTimerViewState } from '../../core
 import { TimerPersistedState } from '../../shared/models/timer-state.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../core/i18n/language.service';
+import { getLocalDateKeyForEpoch, getTodayDateKey } from '../../shared/models/daily.model';
 import { MessageService } from 'primeng/api';
 
 export interface TimerConfig {
@@ -63,8 +64,8 @@ export class TimerComponent implements OnDestroy, OnInit {
 
   timerConfig = signal<TimerConfig>(DEFAULT_TIMER_CONFIG);
   settingsVisible = signal(false);
-  settingsFocusMinutes = signal(DEFAULT_TIMER_CONFIG.focusDuration);
-  settingsBreakMinutes = signal(DEFAULT_TIMER_CONFIG.breakDuration);
+  settingsFocusMinutes = signal<number | null>(DEFAULT_TIMER_CONFIG.focusDuration);
+  settingsBreakMinutes = signal<number | null>(DEFAULT_TIMER_CONFIG.breakDuration);
   settingsError = signal<string | null>(null);
   shareNamePromptVisible = signal(false);
   shareNameInput = signal('');
@@ -92,8 +93,11 @@ export class TimerComponent implements OnDestroy, OnInit {
   transitionTip = this.notificationService.transitionTip;
   isMiniModeSupported = this.miniTimerPip.isSupported();
 
+  private static mobileHintsToastShown = false;
   private mobileHintsToastMql: MediaQueryList | null = null;
   private mobileHintsToastMqlHandler: ((ev: MediaQueryListEvent) => void) | null = null;
+  private readonly mobileHintsToastDelayMs = 1300;
+  private mobileHintsToastTimer: ReturnType<typeof setTimeout> | null = null;
 
   private currentSegmentTotalSeconds = computed(() => {
     const config = this.timerConfig();
@@ -275,24 +279,38 @@ export class TimerComponent implements OnDestroy, OnInit {
     }
   }
 
-  /** En ≤640px los avisos van al toast para no comprimir la botella. */
   private setupMobileHintsToast(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     const mq = window.matchMedia('(max-width: 640px)');
     this.mobileHintsToastMql = mq;
     if (mq.matches) {
-      queueMicrotask(() => this.showMobileHintsToast());
+      this.scheduleMobileHintsToast();
     }
     this.mobileHintsToastMqlHandler = (ev: MediaQueryListEvent) => {
       if (ev.matches) {
-        queueMicrotask(() => this.showMobileHintsToast());
+        this.scheduleMobileHintsToast();
       }
     };
     mq.addEventListener('change', this.mobileHintsToastMqlHandler);
   }
 
+  private scheduleMobileHintsToast(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    if (TimerComponent.mobileHintsToastShown) return;
+    if (this.mobileHintsToastTimer != null) {
+      clearTimeout(this.mobileHintsToastTimer);
+      this.mobileHintsToastTimer = null;
+    }
+    this.mobileHintsToastTimer = setTimeout(() => {
+      this.mobileHintsToastTimer = null;
+      this.showMobileHintsToast();
+    }, this.mobileHintsToastDelayMs);
+  }
+
   private showMobileHintsToast(): void {
     if (!isPlatformBrowser(this.platformId)) return;
+    if (TimerComponent.mobileHintsToastShown) return;
+    TimerComponent.mobileHintsToastShown = true;
     this.language.currentLanguage();
     this.language.translationTick();
     const parts: string[] = [];
@@ -401,6 +419,19 @@ export class TimerComponent implements OnDestroy, OnInit {
     return { ...stats, displayName: name } as CelebrationStats;
   }
 
+  private isDeferredCompletionFromEarlierCalendarDay(segmentEndMs: number): boolean {
+    return getLocalDateKeyForEpoch(segmentEndMs) !== getTodayDateKey();
+  }
+
+  private discardStaleDeferredTimerState(): void {
+    const config = this.timerConfig();
+    this.currentMode.set('focus');
+    this.timeRemaining.set(config.focusDuration * 60);
+    this.isRunning.set(false);
+    this.startedAt.set(null);
+    this.segmentEndsAt.set(null);
+  }
+
   /** Con 0 sesiones completadas hoy, no dejar el temporizador en descanso (restos de localStorage / otro día). */
   private ensureFirstDailySessionNotStuckInBreak(): void {
     if (this.dailyService.completedSessions() !== 0) return;
@@ -472,7 +503,11 @@ export class TimerComponent implements OnDestroy, OnInit {
           } else {
             this.timeRemaining.set(0);
             this.segmentEndsAt.set(null);
-            this.runTimerCompleteLogic({ completionSource: 'deferred' });
+            if (this.isDeferredCompletionFromEarlierCalendarDay(endMs)) {
+              this.discardStaleDeferredTimerState();
+            } else {
+              this.runTimerCompleteLogic({ completionSource: 'deferred' });
+            }
           }
         } else {
           const rawRem = state.remainingSeconds ?? effectiveTotal;
@@ -552,6 +587,10 @@ export class TimerComponent implements OnDestroy, OnInit {
   }
 
   ngOnDestroy(): void {
+    if (this.mobileHintsToastTimer != null) {
+      clearTimeout(this.mobileHintsToastTimer);
+      this.mobileHintsToastTimer = null;
+    }
     if (this.mobileHintsToastMql && this.mobileHintsToastMqlHandler) {
       this.mobileHintsToastMql.removeEventListener('change', this.mobileHintsToastMqlHandler);
       this.mobileHintsToastMql = null;
@@ -758,6 +797,9 @@ export class TimerComponent implements OnDestroy, OnInit {
   }
 
   openSettingsDialog(): void {
+    if (this.isRunning()) {
+      this.pauseTimer();
+    }
     const config = this.timerConfig();
     this.settingsFocusMinutes.set(config.focusDuration);
     this.settingsBreakMinutes.set(config.breakDuration);
@@ -771,11 +813,11 @@ export class TimerComponent implements OnDestroy, OnInit {
   }
 
   onSettingsFocusInput(rawValue: number | null): void {
-    this.settingsFocusMinutes.set(Number(rawValue ?? NaN));
+    this.settingsFocusMinutes.set(rawValue);
   }
 
   onSettingsBreakInput(rawValue: number | null): void {
-    this.settingsBreakMinutes.set(Number(rawValue ?? NaN));
+    this.settingsBreakMinutes.set(rawValue);
   }
 
   resetPomodoroDefaults(): void {
@@ -791,14 +833,11 @@ export class TimerComponent implements OnDestroy, OnInit {
   }
 
   savePomodoroSettings(): void {
-    if (this.isRunning()) {
-      this.settingsError.set(this.t('timer.settingsErrorPaused'));
-      return;
-    }
-
-    const focus = this.safeMinutes(this.settingsFocusMinutes(), DEFAULT_TIMER_CONFIG.focusDuration, 1, 180);
-    const rest = this.safeMinutes(this.settingsBreakMinutes(), DEFAULT_TIMER_CONFIG.breakDuration, 1, 60);
-    if (focus !== this.settingsFocusMinutes() || rest !== this.settingsBreakMinutes()) {
+    const focusInput = this.settingsFocusMinutes();
+    const restInput = this.settingsBreakMinutes();
+    const focus = this.safeMinutes(focusInput, DEFAULT_TIMER_CONFIG.focusDuration, 1, 180);
+    const rest = this.safeMinutes(restInput, DEFAULT_TIMER_CONFIG.breakDuration, 1, 60);
+    if (focusInput == null || restInput == null || focus !== focusInput || rest !== restInput) {
       this.settingsError.set(this.t('timer.settingsErrorInvalid'));
       return;
     }

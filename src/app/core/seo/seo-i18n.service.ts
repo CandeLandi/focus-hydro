@@ -12,8 +12,7 @@ export class SeoI18nService {
   private meta = inject(Meta);
   private router = inject(Router);
   private language = inject(LanguageService);
-  /** Ruta bajo el origen; og:image se resuelve siempre en absoluto para WhatsApp / redes. */
-  private readonly socialImagePath = '/images/logo-hydrofocus.png';
+  private readonly socialImagePath = '/images/logo-hydrofocus.svg';
   private readonly publicSiteOrigin = 'https://www.focusflow-pomodoro.com';
 
   init(): void {
@@ -65,7 +64,9 @@ export class SeoI18nService {
     this.meta.updateTag({ property: 'og:image', content: socialImage });
     this.meta.updateTag({ property: 'og:image:alt', content: 'FocusFlow' });
     this.meta.updateTag({ property: 'og:image:secure_url', content: socialImage });
-    this.meta.updateTag({ property: 'og:image:type', content: 'image/png' });
+    this.meta.updateTag({ property: 'og:image:type', content: 'image/svg+xml' });
+    this.meta.updateTag({ property: 'og:image:width', content: '128' });
+    this.meta.updateTag({ property: 'og:image:height', content: '128' });
 
     this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
     this.meta.updateTag({ name: 'twitter:title', content: appTitle });

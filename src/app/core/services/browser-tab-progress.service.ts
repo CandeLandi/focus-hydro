@@ -106,8 +106,8 @@ export class BrowserTabProgressService {
       this.defaultIconType = links[0].type || null;
       return;
     }
-    this.defaultIconHref = '/favicon.ico';
-    this.defaultIconType = 'image/x-icon';
+    this.defaultIconHref = '/favicon.svg';
+    this.defaultIconType = 'image/svg+xml';
   }
 
   private forceDefaultIconRefresh(): void {

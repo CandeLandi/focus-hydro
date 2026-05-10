@@ -29,16 +29,6 @@
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "assets"
-              },
-              {
-                "glob": "**/*",
-                "input": "src/app/shared/images",
-                "output": "images"
-              },
-              {
-                "glob": "favicon.ico",
-                "input": ".",
-                "output": "/"
               }
             ],
             "styles": [
@@ -48,6 +38,17 @@
           },
           "configurations": {
             "production": {
+              "optimization": {
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": true
+                },
+                "fonts": true
+              },
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
               "budgets": [
                 {
                   "type": "initial",
@@ -102,16 +103,6 @@
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "assets"
-              },
-              {
-                "glob": "**/*",
-                "input": "src/app/shared/images",
-                "output": "images"
-              },
-              {
-                "glob": "favicon.ico",
-                "input": ".",
-                "output": "/"
               }
             ],
             "styles": [],

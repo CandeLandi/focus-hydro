@@ -2,7 +2,6 @@ import { Component, computed, effect, output, signal, inject, DestroyRef } from 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
-import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { QuickStatsComponent, StatCard } from '../../../../components/shared/quick-stats/quick-stats.component';
 import { CelebrationStats } from '../../../../shared/models/celebration.model';
@@ -14,7 +13,7 @@ import { LanguageService } from '../../../../core/i18n/language.service';
 @Component({
   selector: 'app-task-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, InputTextModule, ButtonModule, TooltipModule, QuickStatsComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, InputTextModule, TooltipModule, QuickStatsComponent],
   templateUrl: './task-list.component.html',
   styleUrl: './task-list.component.css',
   host: { class: 'block h-auto min-h-0 lg:h-full' }

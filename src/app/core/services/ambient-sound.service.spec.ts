@@ -49,7 +49,7 @@ describe('AmbientSoundService', () => {
     });
     TestBed.inject(AmbientSoundService);
     expect(ctorSpy).toHaveBeenCalled();
-    expect(audioStub.preload).toBe('auto');
+    expect(audioStub.preload).toBe('none');
     expect(audioStub.loop).toBeTrue();
   });
 

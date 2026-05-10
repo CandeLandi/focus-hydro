@@ -40,25 +40,24 @@ const H = 1200;
 
 /** Vertical rhythm: header → hero → title → subtitle/attribution → stats → hydration → footer */
 const L = {
-  marginX: 80,
-  heroCy: 210,
-  heroROuter: 104,
-  heroRInner: 78,
-  /** Pixels below lowest hero paint before title baseline */
-  gapHeroToTitle: 52,
-  titleFont: '800 64px Inter, system-ui, -apple-system, sans-serif',
-  gapTitleToSubtitle: 32,
+  marginX: 64,
+  heroCy: 220,
+  heroROuter: 94,
+  heroRInner: 68,
+  gapHeroToTitle: 54,
+  titleFont: '800 60px Inter, system-ui, -apple-system, sans-serif',
+  gapTitleToSubtitle: 34,
   subtitleFont: '500 25px Inter, system-ui, -apple-system, sans-serif',
-  gapSubtitleToAttribution: 22,
+  gapSubtitleToAttribution: 26,
   attributionFont: '500 17px Inter, system-ui, -apple-system, sans-serif',
-  gapAttributionBlockToStats: 34,
-  /** Stats card geometry */
-  cardH: 148,
+  gapAttributionBlockToStats: 44,
+  cardH: 154,
   cardRadius: 18,
-  gapStatsToHydration: 26,
+  gapStatsToHydration: 40,
+  hydrationBlockH: 78,
   hydrationFont: '500 26px Inter, system-ui, -apple-system, sans-serif',
-  gapHydrationToFooter: 32,
-  footerCanvasBottomPad: 52
+  footerMinTop: 846,
+  footerCanvasBottomPad: 64
 };
 
 @Injectable({
@@ -91,7 +90,7 @@ export class ImageGeneratorService {
     const afterCard = this.drawStatsCard(ctx, stats, y, copy);
     const hydrationBottom = this.drawHydrationMessageCentered(ctx, afterCard + L.gapStatsToHydration, copy);
 
-    await this.drawFooterBelowContent(ctx, copy, hydrationBottom + L.gapHydrationToFooter);
+    await this.drawFooterBelowContent(ctx, copy, hydrationBottom + 48);
 
     return canvas.toDataURL('image/png');
   }
@@ -166,7 +165,7 @@ export class ImageGeneratorService {
     ctx.fillStyle = COL.cyanBright;
     ctx.shadowColor = 'rgba(34, 211, 238, 0.22)';
     ctx.shadowBlur = 8;
-    ctx.fillText(hashtag, W - L.marginX, 48);
+    ctx.fillText(hashtag, W - L.marginX, 68);
     ctx.restore();
   }
 
@@ -177,11 +176,11 @@ export class ImageGeneratorService {
     const rOuter = L.heroROuter;
     const rInner = L.heroRInner;
 
-    const sparkleCount = 5;
+    const sparkleCount = 4;
     for (let i = 0; i < sparkleCount; i++) {
       const t = i / (sparkleCount - 1);
       const a = -Math.PI * 1.05 + t * Math.PI * 0.65;
-      const rr = rOuter + 34 + ((i * 13) % 18);
+      const rr = rOuter + 30 + ((i * 13) % 16);
       this.drawSparkle(ctx, cx + Math.cos(a) * rr, cy + Math.sin(a) * rr, 5 + (i % 3), 'rgba(34,211,238,0.32)');
     }
 
@@ -234,7 +233,7 @@ export class ImageGeneratorService {
     ctx.restore();
 
     const ringBottom = cy + rOuter;
-    return ringBottom + 18;
+    return ringBottom + 16;
   }
 
   private drawSparkle(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, fill: string): void {
@@ -311,7 +310,7 @@ export class ImageGeneratorService {
       nextY = attrBaseline;
     }
 
-    return nextY + 16;
+    return nextY + 18;
   }
 
   private roundedRectStrokeFill(
@@ -375,7 +374,7 @@ export class ImageGeneratorService {
     ctx.lineTo(mid2, y + cardH - 28);
     ctx.stroke();
 
-    const iconY = y + 40;
+    const iconY = y + 42;
 
     const centres = [
       {
@@ -401,14 +400,14 @@ export class ImageGeneratorService {
       c.drawIcon();
     });
 
-    const valueBaseline = y + 108;
+    const valueBaseline = y + 112;
     ctx.font = '800 46px Inter, system-ui, -apple-system, sans-serif';
     ctx.fillStyle = COL.white;
     ctx.fillText(String(centres[0].tasks), centres[0].xc, valueBaseline);
     ctx.fillText(stats.totalFocusTime, centres[1].xc, valueBaseline);
     ctx.fillText(`${stats.completionPercentage}%`, centres[2].xc, valueBaseline);
 
-    const labelBaseline = y + 134;
+    const labelBaseline = y + 138;
     ctx.font = '600 11px Inter, system-ui, -apple-system, sans-serif';
     ctx.fillStyle = COL.muted2;
     ctx.letterSpacing = '0.04em';
@@ -475,6 +474,23 @@ export class ImageGeneratorService {
 
   private drawHydrationMessageCentered(ctx: CanvasRenderingContext2D, topY: number, copy: ShareCardCopy): number {
     const cx = W / 2;
+    const blockW = 760;
+    const blockH = L.hydrationBlockH;
+    const blockX = cx - blockW / 2;
+    const blockY = topY;
+
+    this.roundedRectStrokeFill(
+      ctx,
+      blockX,
+      blockY,
+      blockW,
+      blockH,
+      16,
+      'rgba(10, 18, 36, 0.34)',
+      'rgba(255,255,255,0.055)',
+      1
+    );
+
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'left';
     ctx.font = L.hydrationFont;
@@ -483,7 +499,8 @@ export class ImageGeneratorService {
     const hi = copy.hydrationHighlight;
     const wLead = ctx.measureText(lead).width;
     const wHi = ctx.measureText(hi).width;
-    const midY = topY + 18;
+    const hasTagline = Boolean(copy.hydrationTagline?.trim());
+    const midY = blockY + (hasTagline ? 32 : blockH / 2);
 
     ctx.shadowBlur = 0;
     let x = cx - (wLead + wHi) / 2;
@@ -501,24 +518,24 @@ export class ImageGeneratorService {
 
     const tag = copy.hydrationTagline?.trim();
     if (!tag) {
-      return mainBottom;
+      return blockY + blockH;
     }
     ctx.font = '600 11px Inter, system-ui, -apple-system, sans-serif';
     ctx.fillStyle = COL.muted2;
     ctx.textAlign = 'center';
-    const tagBaseline = midY + 30;
+    const tagBaseline = midY + 27;
     ctx.fillText(tag, cx, tagBaseline);
     ctx.textAlign = 'left';
-    return tagBaseline + 14;
+    return Math.max(mainBottom, blockY + blockH);
   }
 
   /** Brand stack placed directly under main content so the canvas is not bottom-heavy. */
-  private async drawFooterBelowContent(ctx: CanvasRenderingContext2D, copy: ShareCardCopy, desiredTop: number): Promise<void> {
+  private async drawFooterBelowContent(ctx: CanvasRenderingContext2D, copy: ShareCardCopy, preferredTop: number): Promise<void> {
     const cx = W / 2;
-    const logoSize = 36;
-    const gapLogoToBrand = 10;
-    const gapBrandToTagline = 22;
-    const gapTaglineToUrl = 20;
+    const logoSize = 44;
+    const gapLogoToBrand = 12;
+    const gapBrandToTagline = 24;
+    const gapTaglineToUrl = 24;
 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
@@ -530,21 +547,18 @@ export class ImageGeneratorService {
     const wFocus = ctx.measureText(partFocus).width;
     const wFlow = ctx.measureText(partFlow).width;
 
-    const footerStackHeight = logoSize + gapLogoToBrand + 28 + gapBrandToTagline + 13 + gapTaglineToUrl + 12;
-    let logoTop = desiredTop;
-    const minTop = L.marginX * 0.5;
-    const maxTop = H - L.footerCanvasBottomPad - footerStackHeight;
-    if (logoTop < minTop) logoTop = minTop;
-    if (logoTop > maxTop) logoTop = Math.max(minTop, maxTop);
+    const maxLogoTop = H - L.footerCanvasBottomPad - 118;
+    const logoTop = Math.min(Math.max(preferredTop, L.footerMinTop), maxLogoTop);
+    const brandBaseline = logoTop + logoSize + gapLogoToBrand;
+    const urlY = brandBaseline + gapBrandToTagline + 13 + gapTaglineToUrl;
 
     try {
-      const logo = await this.loadImage('/images/logo-hydrofocus.png');
+      const logo = await this.loadImage('/images/logo-hydrofocus.svg');
       ctx.drawImage(logo, cx - logoSize / 2, logoTop, logoSize, logoSize);
     } catch {
       this.drawSparkle(ctx, cx, logoTop + logoSize / 2, 10, 'rgba(34,211,238,0.35)');
     }
 
-    const brandBaseline = logoTop + logoSize + gapLogoToBrand;
     const pairW = wFocus + focusFlowGap + wFlow;
     const pairLeft = cx - pairW / 2;
 
@@ -568,7 +582,7 @@ export class ImageGeneratorService {
     ctx.font = '600 18px Inter, system-ui, -apple-system, sans-serif';
     ctx.fillStyle = 'rgba(186, 210, 238, 0.88)';
     ctx.textBaseline = 'middle';
-    ctx.fillText(url, cx, brandBaseline + gapBrandToTagline + 13 + gapTaglineToUrl);
+    ctx.fillText(url, cx, urlY);
     ctx.textBaseline = 'alphabetic';
     ctx.textAlign = 'left';
   }

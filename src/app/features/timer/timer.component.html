@@ -119,19 +119,19 @@
           type="button"
           class="pomodoro-settings-icon-btn pomodoro-settings-icon-btn-save"
           (click)="savePomodoroSettings()"
-          aria-label="Guardar cambios"
+          [attr.aria-label]="'common.save' | translate"
           [title]="'common.save' | translate"
         >
-          <span class="pi pi-check"></span>
+          <span class="pi pi-check" aria-hidden="true"></span>
         </button>
         <button
           type="button"
           class="pomodoro-settings-icon-btn"
           (click)="closeSettingsDialog()"
-          aria-label="Cerrar"
+          [attr.aria-label]="'common.close' | translate"
           [title]="'common.close' | translate"
         >
-          <span class="pi pi-times"></span>
+          <span class="pi pi-times" aria-hidden="true"></span>
         </button>
       </div>
     </div>
@@ -139,15 +139,15 @@
 
   <div class="hydro-dialog-body">
     <div class="pomodoro-preset-row">
-      <button type="button" class="pomodoro-preset-chip" (click)="applyPomodoroPreset(25, 5)">{{ 'timer.presetClassic' | translate }}</button>
-      <button type="button" class="pomodoro-preset-chip" (click)="applyPomodoroPreset(50, 10)">{{ 'timer.presetDeep' | translate }}</button>
-      <button type="button" class="pomodoro-preset-chip" (click)="applyPomodoroPreset(90, 15)">{{ 'timer.presetExtended' | translate }}</button>
+      <button type="button" class="pomodoro-preset-chip" (click)="applyPomodoroPreset(25, 5)" [attr.aria-label]="'timer.presetClassic' | translate">{{ 'timer.presetClassic' | translate }}</button>
+      <button type="button" class="pomodoro-preset-chip" (click)="applyPomodoroPreset(50, 10)" [attr.aria-label]="'timer.presetDeep' | translate">{{ 'timer.presetDeep' | translate }}</button>
+      <button type="button" class="pomodoro-preset-chip" (click)="applyPomodoroPreset(90, 15)" [attr.aria-label]="'timer.presetExtended' | translate">{{ 'timer.presetExtended' | translate }}</button>
     </div>
 
     <div class="pomodoro-settings-grid">
       <label class="pomodoro-settings-field">
         <div class="pomodoro-settings-field-head">
-          <span class="pomodoro-settings-label">{{ 'timer.settingsFocus' | translate }}</span>
+          <span id="focus-minutes-label" class="pomodoro-settings-label">{{ 'timer.settingsFocus' | translate }}</span>
           <span class="pomodoro-settings-unit">{{ 'timer.minutes' | translate }}</span>
         </div>
         <p-inputNumber
@@ -160,12 +160,14 @@
           buttonLayout="stacked"
           incrementButtonIcon="pi pi-chevron-up"
           decrementButtonIcon="pi pi-chevron-down"
+          inputId="focus-minutes-input"
+          ariaLabelledBy="focus-minutes-label"
           class="pomodoro-settings-input"
         />
       </label>
       <label class="pomodoro-settings-field">
         <div class="pomodoro-settings-field-head">
-          <span class="pomodoro-settings-label">{{ 'timer.settingsBreak' | translate }}</span>
+          <span id="break-minutes-label" class="pomodoro-settings-label">{{ 'timer.settingsBreak' | translate }}</span>
           <span class="pomodoro-settings-unit">{{ 'timer.minutes' | translate }}</span>
         </div>
         <p-inputNumber
@@ -178,6 +180,8 @@
           buttonLayout="stacked"
           incrementButtonIcon="pi pi-chevron-up"
           decrementButtonIcon="pi pi-chevron-down"
+          inputId="break-minutes-input"
+          ariaLabelledBy="break-minutes-label"
           class="pomodoro-settings-input"
         />
       </label>
@@ -189,7 +193,7 @@
 
     @if (settingsError()) {
       <div class="mt-3 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-[12px] text-red-200">
-        <span class="pi pi-exclamation-triangle mr-2 text-[12px]"></span>
+        <span class="pi pi-exclamation-triangle mr-2 text-[12px]" aria-hidden="true"></span>
         {{ settingsError() }}
       </div>
     }
@@ -214,7 +218,7 @@
   <ng-template pTemplate="header">
     <div class="hydro-dialog-title-row">
       <div class="hydro-dialog-icon hydro-dialog-icon-cyan">
-        <span class="pi pi-calendar-times"></span>
+        <span class="pi pi-calendar-times" aria-hidden="true"></span>
       </div>
       <div class="min-w-0">
         <h3 class="hydro-dialog-title">{{ 'timer.closeDayTitle' | translate }}</h3>
@@ -247,14 +251,14 @@
             {{ ('timer.sessionLabel' | translate:{ value: sessionsCompleted() + 1 }) + (nextIsLongBreak() ? (' · ' + ('timer.nextLongBreak' | translate)) : '') }}
           </span>
           @if (sessionsCompleted() > 0) {
-            <button type="button" (click)="resetSessions()" class="session-reset-btn ml-1 p-1.5 rounded-lg opacity-60 hover:opacity-100 transition-all" title="Reiniciar sesiones">
+            <button type="button" (click)="resetSessions()" class="session-reset-btn ml-1 p-1.5 rounded-lg opacity-60 hover:opacity-100 transition-all" [attr.aria-label]="'timer.reset' | translate" [title]="'timer.reset' | translate">
               <span class="pi pi-refresh text-xs"></span>
             </button>
           }
         </div>
         <div class="timer-secondary-toolbar">
-          <button type="button" class="pomodoro-config-chip" (click)="openSettingsDialog()">
-            <span class="pi pi-sliders-h"></span>
+          <button type="button" class="pomodoro-config-chip" (click)="openSettingsDialog()" [attr.aria-label]="'timer.settingsChip' | translate">
+            <span class="pi pi-sliders-h" aria-hidden="true"></span>
             <span>{{ 'timer.settingsChip' | translate }}</span>
           </button>
           <span class="timer-secondary-divider" aria-hidden="true"></span>
@@ -293,16 +297,16 @@
       </div>
 
       <div class="timer-buttons">
-        <button type="button" (click)="resetTimer()" class="timer-btn timer-btn-secondary" title="Reiniciar bloque">
-          <span class="pi pi-refresh"></span>
+        <button type="button" (click)="resetTimer()" class="timer-btn timer-btn-secondary" [attr.aria-label]="'timer.reset' | translate" [title]="'timer.reset' | translate">
+          <span class="pi pi-refresh" aria-hidden="true"></span>
           <span class="timer-btn-text">{{ 'timer.reset' | translate }}</span>
         </button>
-        <button type="button" (click)="toggleTimer()" class="timer-btn timer-btn-primary" [class.timer-btn-active]="isRunning()">
-          <span [ngClass]="isRunning() ? 'pi pi-pause' : 'pi pi-play'"></span>
+        <button type="button" (click)="toggleTimer()" class="timer-btn timer-btn-primary" [class.timer-btn-active]="isRunning()" [attr.aria-label]="mainButtonLabel()">
+          <span [ngClass]="isRunning() ? 'pi pi-pause' : 'pi pi-play'" aria-hidden="true"></span>
           <span class="timer-btn-text">{{ mainButtonLabel() }}</span>
         </button>
-        <button type="button" (click)="requestSkipToBreak()" class="timer-btn timer-btn-secondary timer-btn-break" [class.timer-btn-active]="currentMode() === 'break'" [attr.title]="currentMode() === 'focus' ? 'Descanso' : 'Volver al trabajo'">
-          <span [ngClass]="skipActionIcon()"></span>
+        <button type="button" (click)="requestSkipToBreak()" class="timer-btn timer-btn-secondary timer-btn-break" [class.timer-btn-active]="currentMode() === 'break'" [attr.aria-label]="currentMode() === 'focus' ? ('timer.rest' | translate) : ('timer.back' | translate)" [attr.title]="currentMode() === 'focus' ? ('timer.rest' | translate) : ('timer.back' | translate)">
+          <span [ngClass]="skipActionIcon()" aria-hidden="true"></span>
           <span class="timer-btn-text">{{ currentMode() === 'focus' ? ('timer.rest' | translate) : ('timer.back' | translate) }}</span>
         </button>
       </div>
@@ -349,8 +353,8 @@
 
 @if (transitionTip()) {
   <div class="transition-tip-card" role="status" aria-live="polite">
-    <button type="button" class="transition-tip-close" (click)="dismissTransitionTip()" aria-label="Cerrar tip">
-      <span class="pi pi-times"></span>
+    <button type="button" class="transition-tip-close" (click)="dismissTransitionTip()" [attr.aria-label]="'common.close' | translate">
+      <span class="pi pi-times" aria-hidden="true"></span>
     </button>
     <p class="transition-tip-title">{{ transitionTip()!.title }}</p>
     <p class="transition-tip-message">{{ transitionTip()!.message }}</p>

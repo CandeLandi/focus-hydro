@@ -123,8 +123,8 @@ export class NotificationService {
 
     if (this.settings.browserNotificationEnabled && !skipSystemNotification) {
       await this.showBrowserNotification(title, message, {
-        icon: '/images/logo-hydrofocus.png',
-        badge: '/images/logo-hydrofocus.png',
+        icon: '/images/logo-hydrofocus.svg',
+        badge: '/images/logo-hydrofocus.svg',
         tag: 'focus-session-completed',
         requireInteraction: false,
         silent: false
@@ -156,8 +156,8 @@ export class NotificationService {
 
     if (this.settings.browserNotificationEnabled && !skipSystemNotification) {
       await this.showBrowserNotification(title, message, {
-        icon: '/images/logo-hydrofocus.png',
-        badge: '/images/logo-hydrofocus.png',
+        icon: '/images/logo-hydrofocus.svg',
+        badge: '/images/logo-hydrofocus.svg',
         tag: 'break-completed',
         requireInteraction: false,
         silent: false

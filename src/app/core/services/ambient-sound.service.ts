@@ -59,7 +59,7 @@ export class AmbientSoundService {
 
   private initAudio(): void {
     const el = new Audio(AMBIENT_SRC);
-    el.preload = 'auto';
+    el.preload = 'none';
     el.loop = true;
     el.addEventListener('play', () => this.isPlaying.set(true));
     el.addEventListener('pause', () => this.isPlaying.set(false));

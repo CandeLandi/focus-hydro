@@ -71,7 +71,7 @@
   height: 68px;
   margin: 0 auto;
   border-radius: 999px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .celebration-stats-inline {

@@ -572,22 +572,27 @@ a.p-button:not(.p-disabled) {
 /* Pomodoro settings: compact mobile layout (dialog appendTo body → global scope) */
 @media (max-width: 640px) {
   .p-dialog.hydro-dialog.pomodoro-settings-dialog {
-    width: calc(100vw - 32px) !important;
-    max-width: calc(100vw - 32px) !important;
-    margin: max(0.5rem, env(safe-area-inset-top, 0px)) auto max(0.75rem, env(safe-area-inset-bottom, 0px)) !important;
-    max-height: min(85dvh, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 20px));
+    width: calc(100vw - 20px) !important;
+    max-width: 430px !important;
+    margin: max(0.6rem, env(safe-area-inset-top, 0px)) auto max(0.6rem, env(safe-area-inset-bottom, 0px)) !important;
+    max-height: min(88dvh, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 18px));
+    border-radius: 22px !important;
+    border-color: rgba(103, 181, 255, 0.34) !important;
+    background:
+      radial-gradient(circle at 18% -12%, rgba(34, 211, 238, 0.1) 0%, transparent 42%),
+      linear-gradient(180deg, rgba(10, 18, 34, 0.99) 0%, rgba(5, 10, 20, 1) 100%) !important;
     display: flex !important;
     flex-direction: column !important;
     overflow: hidden !important;
   }
 
   .p-dialog.hydro-dialog.pomodoro-settings-dialog .p-dialog-header {
-    padding: 0.55rem 0.7rem 0.3rem !important;
+    padding: 1rem 1rem 0.55rem !important;
     flex-shrink: 0;
   }
 
   .p-dialog.hydro-dialog.pomodoro-settings-dialog .p-dialog-content {
-    padding: 0 0.7rem 0.55rem !important;
+    padding: 0 1rem 0.95rem !important;
     flex: 1 1 auto !important;
     min-height: 0 !important;
     max-height: none !important;
@@ -596,45 +601,103 @@ a.p-button:not(.p-disabled) {
     -webkit-overflow-scrolling: touch;
   }
 
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .pomodoro-settings-header {
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .pomodoro-settings-header > .min-w-0 {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .pomodoro-settings-header-actions {
+    gap: 0.42rem !important;
+    margin-left: 0 !important;
+    padding-top: 0.05rem;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .pomodoro-settings-icon-btn {
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+    border-radius: 13px !important;
+    background: rgba(9, 22, 43, 0.82) !important;
+  }
+
   .p-dialog.hydro-dialog.pomodoro-settings-dialog .hydro-dialog-title {
-    font-size: 1.02rem;
-    line-height: 1.22;
+    font-size: 1.08rem;
+    line-height: 1.18;
     letter-spacing: -0.01em;
   }
 
   .p-dialog.hydro-dialog.pomodoro-settings-dialog .hydro-dialog-subtitle {
-    font-size: 0.7rem;
+    max-width: 18rem;
+    font-size: 0.78rem;
     line-height: 1.35;
-    margin-top: 0.12rem;
-    color: rgba(176, 191, 220, 0.78);
+    margin-top: 0.25rem;
+    color: rgba(176, 191, 220, 0.82);
   }
 
   .p-dialog.hydro-dialog.pomodoro-settings-dialog .hydro-dialog-body {
-    padding-top: 0.15rem;
+    padding-top: 0.35rem;
   }
 
   .p-dialog.hydro-dialog.pomodoro-settings-dialog .pomodoro-preset-row {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.45rem;
-    margin-bottom: 0.55rem;
-  }
-
-  .p-dialog.hydro-dialog.pomodoro-settings-dialog .pomodoro-preset-row .pomodoro-preset-chip:nth-child(3) {
-    grid-column: 1 / -1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.42rem;
+    margin: 0 0 0.72rem;
+    padding: 0;
+    overflow: visible;
   }
 
   .p-dialog.hydro-dialog.pomodoro-settings-dialog .pomodoro-preset-chip {
-    min-height: 40px !important;
-    padding: 0.38rem 0.5rem !important;
-    font-size: 11px !important;
-    border-radius: 11px !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-width: 0;
+    min-height: 36px !important;
+    padding: 0.38rem 0.42rem !important;
+    font-size: 0.68rem !important;
+    border-radius: 999px !important;
+    line-height: 1.15;
+    white-space: normal;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .pomodoro-settings-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.55rem !important;
+    margin-top: 0 !important;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .pomodoro-settings-field {
+    gap: 0.4rem !important;
+    padding: 0.62rem 0.52rem;
+    border: 1px solid rgba(100, 116, 139, 0.22);
+    border-radius: 15px;
+    background: linear-gradient(180deg, rgba(11, 24, 45, 0.5) 0%, rgba(7, 14, 28, 0.58) 100%);
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .pomodoro-settings-field-head {
+    gap: 0.28rem;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .pomodoro-settings-label {
+    font-size: 0.69rem !important;
+    color: rgba(219, 234, 254, 0.92);
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .pomodoro-settings-field-head .pomodoro-settings-unit {
+    font-size: 0.54rem !important;
+    letter-spacing: 0.05em;
+    color: rgba(148, 176, 210, 0.82);
   }
 
   .p-dialog.hydro-dialog.pomodoro-settings-dialog .pomodoro-settings-helper {
-    margin-top: 0.45rem !important;
+    margin-top: 0.7rem !important;
     margin-bottom: 0 !important;
-    font-size: 10px !important;
+    font-size: 0.72rem !important;
     line-height: 1.35 !important;
     color: rgba(148, 163, 184, 0.72) !important;
   }
@@ -646,22 +709,68 @@ a.p-button:not(.p-disabled) {
 
   .p-dialog.hydro-dialog.pomodoro-settings-dialog .p-inputnumber .p-inputtext {
     width: 100% !important;
-    height: 44px !important;
-    font-size: 17px !important;
+    height: 42px !important;
+    font-size: 1.05rem !important;
     font-weight: 700 !important;
-    border-radius: 11px !important;
-    padding-inline: 0.65rem 2.35rem !important;
+    border-color: rgba(74, 105, 148, 0.42) !important;
+    border-radius: 12px !important;
+    padding-inline: 0.62rem 2.25rem !important;
+    background: rgba(4, 9, 18, 0.82) !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .p-inputnumber .p-inputtext:enabled:hover,
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .p-inputnumber .p-inputtext:enabled:focus {
+    border-color: rgba(74, 105, 148, 0.58) !important;
+    box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.08) !important;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .p-inputnumber-stacked .p-inputnumber-button {
+    border-color: rgba(74, 105, 148, 0.42) !important;
+    box-shadow: none !important;
   }
 
   .p-dialog.hydro-dialog.pomodoro-settings-dialog .p-inputnumber-stacked .p-inputnumber-button-group {
-    width: 1.85rem !important;
-    inset-inline-end: 3px !important;
-    height: calc(100% - 6px) !important;
-    inset-block-start: 3px !important;
+    width: 1.78rem !important;
+    inset-inline-end: 4px !important;
+    height: calc(100% - 8px) !important;
+    inset-block-start: 4px !important;
   }
 
   .p-dialog.hydro-dialog.pomodoro-settings-dialog .p-inputnumber-stacked .p-inputnumber-button .pi {
     font-size: 0.65rem !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog {
+    width: calc(100vw - 14px) !important;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .p-dialog-header {
+    padding-inline: 0.78rem !important;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .p-dialog-content {
+    padding-inline: 0.78rem !important;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .pomodoro-preset-row {
+    gap: 0.32rem;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .pomodoro-preset-chip {
+    padding-inline: 0.28rem !important;
+    font-size: 0.62rem !important;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .pomodoro-settings-grid {
+    gap: 0.42rem !important;
+  }
+
+  .p-dialog.hydro-dialog.pomodoro-settings-dialog .pomodoro-settings-field {
+    padding-inline: 0.42rem;
   }
 }
 
